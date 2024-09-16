@@ -4,4 +4,15 @@ version = "0.1.0"
 description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.11"
-dependencies = []
+dependencies = [
+    "beartype>=0.18.5",
+    "jaxtyping>=0.2.34",
+    "open-clip-torch>=2.26.1",
+    "torch>=2.4.1",
+    "torchvision>=0.19.1",
+    "tyro>=0.8.10",
+    "webdataset>=0.2.100",
+]
+
+[tool.ruff.lint]
+ignore = ["F722"]
