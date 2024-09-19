@@ -16,6 +16,7 @@ import numpy as np
 import torch
 import tyro
 import webdataset as wds
+from jaxtyping import Float, jaxtyped
 
 import sax
 
@@ -49,6 +50,11 @@ class Args:
     """(computed at runtime) which kind of accelerator to use."""
     seed: int = 42
     """random seed."""
+    # Slurm
+    slurm: bool = False
+    """whether to use slurm to run the job (with submitit)."""
+    slurm_acct: str = "PAS2136"
+    """slurm account."""
 
 
 def filter_no_caption_or_no_image(sample):
@@ -131,23 +137,69 @@ def fs_safe(string: str) -> str:
     return string.replace(":", "_").replace("/", "_")
 
 
+@jaxtyped(typechecker=beartype.beartype)
+class ShardedDiskStorage:
+    dirpath: str
+    pattern: str
+    shard_counter: int
+    shard: object
+
+    def __init__(self, dirpath: str, digits: int, examples_per_shard: int):
+        self.dirpath = dirpath
+        os.makedirs(self.dirpath, exist_ok=True)
+
+        self.pattern = f"shard-%0{digits}d.bin"
+        self.shard_counter = -1
+
+        self.examples_per_shard = examples_per_shard
+        self.shard = None
+
+        self.next()
+
+    def write(self, data: Float[np.ndarray, "batch n_layers d_model"]):
+        batch_size, n_layers, d_model = data.shape
+        assert self.n_per_shard % batch_size == 0
+
+        shape = (self.n_per_shard, n_layers, 1, d_model)
+
+        if self.shard is None:
+            self._new_shard(shape)
+        elif self.pos + batch_size > self.n_per_shard:
+            # Time for a new shard.
+            self.finish()
+            self._new_shard(shape)
+
+        self.shard[self.pos : self.pos + batch_size] = data
+        self.pos += batch_size
+
+    def _new_shard(self, shape: tuple[int, int, int, int]):
+        self.finish()
+
+        self.shard_counter += 1
+        filepath = os.path.join(self.dirpath, self.pattern % self.shard_counter)
+        self.shard = np.memmap(filepath, dtype=np.float32, mode="w+", shape=shape)
+        self.pos = 0
+
+    def finish(self):
+        if self.shard is not None:
+            self.shard.flush()
+            self.shard.close()
+            del self.shard
+
+
 @torch.no_grad
-def main(args: Args):
+def get_activations(args: Args):
     if args.device == "cuda" and not torch.cuda.is_available():
         logger.warning("No CUDA GPU found. Using CPU instead.")
-        # Can't use CUDA, so might be on macOS, which cannot use spawn with pickle.
-        torch.multiprocessing.set_start_method("fork")
         args = dataclasses.replace(args, device="cpu")
-    elif args.device == "cuda" and torch.cuda.is_available():
-        torch.multiprocessing.set_start_method("spawn")
 
     model = sax.load_vision_backbone("open-clip", args.model_ckpt).to(args.device)
     recorder = sax.Recorder(model)
     dataloader = get_dataloader(args, model.make_img_transform())
 
     dirpath = os.path.join(args.write_to, fs_safe(args.model_ckpt))
-    os.makedirs(dirpath, exist_ok=True)
-    filepath = os.path.join(dirpath, "activations.bin")
+    filename = "activations-{args.suffix}.bin" if args.suffix else "activations.bin"
+    filepath = os.path.join(dirpath, filename)
     arr = np.memmap(
         filepath,
         dtype=np.float32,
@@ -171,6 +223,27 @@ def main(args: Args):
                 (b * args.batch_size + len(images)) / args.n_examples * 100,
             )
             arr.flush()
+
+    print(b * args.batch_size + len(images))
+
+
+@torch.no_grad
+def main(args: Args):
+    if args.slurm:
+        import submitit
+
+        executor = submitit.AutoExecutor(folder="logs")
+        executor.update_parameters(
+            timeout_min=60,
+            gpus_per_node=1,
+            cpus_per_task=12,
+            stderr_to_stdout=True,
+            slurm_account=args.slurm_acct,
+        )
+        job = executor.submit(get_activations, args)
+        job.result()
+    else:
+        get_activations(args)
 
 
 if __name__ == "__main__":

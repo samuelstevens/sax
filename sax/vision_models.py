@@ -159,7 +159,6 @@ register_vision_backbone("open-clip", OpenClip)
 class Recorder:
     def __init__(self, model: VisionBackbone):
         self._storage = None
-
         self._i = 0
 
         self.n_layers = 0
@@ -167,12 +166,26 @@ class Recorder:
             mlp.register_forward_hook(self)
             self.n_layers += 1
 
+        self.logger = logging.getLogger("recorder")
+
     def __call__(self, module, args, output) -> None:
         if self._storage is None:
             batch, _, dim = output.shape
             self._storage = torch.zeros(
                 (batch, self.n_layers, 1, dim), device=output.device
             )
+
+        if self._storage[:, self._i, 0, :].shape != output[:, 0, :].shape:
+            batch, _, dim = output.shape
+
+            old_batch, _, _, old_dim = self._storage.shape
+            msg = "Output shape does not match storage shape: (batch) %d != %d or (dim) %d != %d"
+            self.logger.warning(msg, old_batch, batch, old_dim, dim)
+
+            self._storage = torch.zeros(
+                (batch, self.n_layers, 1, dim), device=output.device
+            )
+
         self._storage[:, self._i, 0, :] = output[:, 0, :]
         self._i += 1
 
