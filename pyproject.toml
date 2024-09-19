@@ -6,6 +6,7 @@ readme = "README.md"
 requires-python = ">=3.11"
 dependencies = [
     "beartype>=0.18.5",
+    "datasets>=3.0.0",
     "jaxtyping>=0.2.34",
     "open-clip-torch>=2.26.1",
     "torch>=2.4.1",

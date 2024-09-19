@@ -1,3 +1,4 @@
+import collections.abc
 import dataclasses
 import logging
 import os
@@ -36,10 +37,14 @@ class VisionBackbone(torch.nn.Module):
         err_msg = f"{self.__class__.__name__} must implemented make_img_transform()."
         raise NotImplementedError(err_msg)
 
+    def mlps(self) -> collections.abc.Iterator[torch.nn.Module]:
+        err_msg = f"{self.__class__.__name__} must implemented mlps()."
+        raise NotImplementedError(err_msg)
+
 
 def get_cache_dir() -> str:
     cache_dir = ""
-    for var in ("BIOBENCH_CACHE", "HF_HOME", "HF_HUB_CACHE"):
+    for var in ("SAX_CACHE", "HF_HOME", "HF_HUB_CACHE"):
         cache_dir = cache_dir or os.environ.get(var, "")
     return cache_dir or "."
 
@@ -59,6 +64,7 @@ class OpenClip(VisionBackbone):
             )
 
         self.model = clip.visual
+        self.model.proj = None
         self.model.output_tokens = True  # type: ignore
 
     def make_img_transform(self):
@@ -74,6 +80,10 @@ class OpenClip(VisionBackbone):
             return EncodedImgBatch(img, patches)
         else:
             return EncodedImgBatch(result, None)
+
+    def mlps(self) -> collections.abc.Iterable[torch.nn.Module]:
+        for block in self.model.transformer.resblocks:
+            yield block.mlp
 
 
 class TimmVit(VisionBackbone):
@@ -112,7 +122,7 @@ class TimmVit(VisionBackbone):
 _global_backbone_registry: dict[str, type[VisionBackbone]] = {}
 
 
-@beartype.beartype
+@jaxtyped(typechecker=beartype.beartype)
 def load_vision_backbone(model_org: str, ckpt: str) -> VisionBackbone:
     """
     Load a pretrained vision backbone.
@@ -124,6 +134,7 @@ def load_vision_backbone(model_org: str, ckpt: str) -> VisionBackbone:
     return cls(ckpt)
 
 
+@jaxtyped(typechecker=beartype.beartype)
 def register_vision_backbone(model_org: str, cls: type[VisionBackbone]):
     """
     Register a new vision backbone class.
@@ -133,6 +144,7 @@ def register_vision_backbone(model_org: str, cls: type[VisionBackbone]):
     _global_backbone_registry[model_org] = cls
 
 
+@beartype.beartype
 def list_vision_backbones() -> list[str]:
     """
     List all vision backbone model orgs.
@@ -142,3 +154,33 @@ def list_vision_backbones() -> list[str]:
 
 register_vision_backbone("timm-vit", TimmVit)
 register_vision_backbone("open-clip", OpenClip)
+
+
+class Recorder:
+    def __init__(self, model: VisionBackbone):
+        self._storage = None
+
+        self._i = 0
+
+        self.n_layers = 0
+        for mlp in model.mlps():
+            mlp.register_forward_hook(self)
+            self.n_layers += 1
+
+    def __call__(self, module, args, output) -> None:
+        if self._storage is None:
+            batch, _, dim = output.shape
+            self._storage = torch.zeros(
+                (batch, self.n_layers, 1, dim), device=output.device
+            )
+        self._storage[:, self._i, 0, :] = output[:, 0, :]
+        self._i += 1
+
+    def reset(self):
+        self._i = 0
+
+    @property
+    def activations(self):
+        if self._storage is None:
+            raise RuntimeError("First call model.img_encode()")
+        return torch.clone(self._storage).cpu()

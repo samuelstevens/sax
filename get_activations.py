@@ -7,11 +7,13 @@ By default, I am interested in training SAEs on BioCLIP looking at the validatio
 Because of this, I use a lot of the same infrastructure that we used for training (webdataset, open_clip_torch, etc).
 """
 
-import beartype
 import dataclasses
-import torch
 import logging
+import os
 
+import beartype
+import numpy as np
+import torch
 import tyro
 import webdataset as wds
 
@@ -27,14 +29,26 @@ logger = logging.getLogger("activations")
 class Args:
     data_url: str = "/fs/ess/PAS2136/open_clip/data/evobio10m-v3.3/224x224/val/shard-{000000..000063}.tar"
     """where the validation split is located."""
+    n_examples: int = 503199
+    """number of examples in data_url."""
+    imagenet: bool = False
+    """whether to use imagenet for debugging rather than --data-url."""
     batch_size: int = 256
     """inference batch size."""
+    log_every: int = 10
+    """how often to log."""
     n_workers: int = 4
     """number of dataloader workers."""
     model_ckpt: str = "hf-hub:imageomics/BioCLIP"
     """specific open_clip model checkpoint to load."""
+    d_model: int = 768
+    """number of dimensions of outputs."""
     write_to: str = "/fs/scratch/PAS2136/samuelstevens/datasets/sae"
     """where to write activations."""
+    device: str = "cuda"
+    """(computed at runtime) which kind of accelerator to use."""
+    seed: int = 42
+    """random seed."""
 
 
 def filter_no_caption_or_no_image(sample):
@@ -53,8 +67,41 @@ def log_and_continue(exn):
 
 @beartype.beartype
 def get_dataloader(args: Args, img_transform):
-    # at this point we have an iterator over all the shards
+    if args.imagenet:
+        import datasets
+
+        def hf_transform(example):
+            example["image"] = example["image"].convert("RGB")
+            example["image"] = img_transform(example["image"])
+            return example
+
+        def _collate_fn(batch):
+            batch = torch.utils.data.default_collate(batch)
+            return (batch["image"],)
+
+        dataset = (
+            datasets.load_dataset(
+                "ILSVRC/imagenet-1k", split="train", trust_remote_code=True
+            )
+            .shuffle(args.seed)
+            .to_iterable_dataset(num_shards=args.n_workers)
+            .map(hf_transform)
+            .with_format("torch")
+        )
+
+        return torch.utils.data.DataLoader(
+            dataset=dataset,
+            batch_size=args.batch_size,
+            drop_last=False,
+            num_workers=args.n_workers,
+            pin_memory=True,
+            persistent_workers=args.n_workers > 0,
+            shuffle=False,  # We use dataset.shuffle instead
+            collate_fn=_collate_fn,
+        )
+
     dataset = wds.DataPipeline(
+        # at this point we have an iterator over all the shards
         wds.SimpleShardList(args.data_url),
         wds.shuffle(),
         wds.split_by_worker,
@@ -80,15 +127,50 @@ def get_dataloader(args: Args, img_transform):
     return dataloader
 
 
+def fs_safe(string: str) -> str:
+    return string.replace(":", "_").replace("/", "_")
+
+
 @torch.no_grad
 def main(args: Args):
-    model = sax.load_vision_backbone("open-clip", args.model_ckpt)
+    if args.device == "cuda" and not torch.cuda.is_available():
+        logger.warning("No CUDA GPU found. Using CPU instead.")
+        # Can't use CUDA, so might be on macOS, which cannot use spawn with pickle.
+        torch.multiprocessing.set_start_method("fork")
+        args = dataclasses.replace(args, device="cpu")
+    elif args.device == "cuda" and torch.cuda.is_available():
+        torch.multiprocessing.set_start_method("spawn")
 
+    model = sax.load_vision_backbone("open-clip", args.model_ckpt).to(args.device)
+    recorder = sax.Recorder(model)
     dataloader = get_dataloader(args, model.make_img_transform())
 
+    dirpath = os.path.join(args.write_to, fs_safe(args.model_ckpt))
+    os.makedirs(dirpath, exist_ok=True)
+    filepath = os.path.join(dirpath, "activations.bin")
+    arr = np.memmap(
+        filepath,
+        dtype=np.float32,
+        mode="w+",
+        shape=(args.n_examples, recorder.n_layers, 1, args.d_model),
+    )
+
     for b, (images,) in enumerate(dataloader):
-        logits = model(images)
-        breakpoint()
+        images = images.to(args.device)
+        model.img_encode(images)
+        activations = recorder.activations.numpy()
+        arr[b * args.batch_size : b * args.batch_size + len(images)] = activations
+        recorder.reset()
+
+        if b % args.log_every == 0:
+            logger.info(
+                "batch: %d, example: %d/%d (%.1f%%)",
+                b,
+                b * args.batch_size + len(images),
+                args.n_examples,
+                (b * args.batch_size + len(images)) / args.n_examples * 100,
+            )
+            arr.flush()
 
 
 if __name__ == "__main__":
