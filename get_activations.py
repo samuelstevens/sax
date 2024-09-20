@@ -46,10 +46,10 @@ class Args:
     """number of dimensions of outputs."""
     write_to: str = "/fs/scratch/PAS2136/samuelstevens/datasets/sae"
     """where to write activations."""
+    suffix: str = ""
+    """additional suffix for the activations file."""
     device: str = "cuda"
     """(computed at runtime) which kind of accelerator to use."""
-    seed: int = 42
-    """random seed."""
     # Slurm
     slurm: bool = False
     """whether to use slurm to run the job (with submitit)."""
@@ -89,7 +89,6 @@ def get_dataloader(args: Args, img_transform):
             datasets.load_dataset(
                 "ILSVRC/imagenet-1k", split="train", trust_remote_code=True
             )
-            .shuffle(args.seed)
             .to_iterable_dataset(num_shards=args.n_workers)
             .map(hf_transform)
             .with_format("torch")
@@ -102,18 +101,16 @@ def get_dataloader(args: Args, img_transform):
             num_workers=args.n_workers,
             pin_memory=True,
             persistent_workers=args.n_workers > 0,
-            shuffle=False,  # We use dataset.shuffle instead
+            shuffle=False,
             collate_fn=_collate_fn,
         )
 
     dataset = wds.DataPipeline(
         # at this point we have an iterator over all the shards
         wds.SimpleShardList(args.data_url),
-        wds.shuffle(),
         wds.split_by_worker,
         # at this point, we have an iterator over the shards assigned to each worker
         wds.tarfile_to_samples(handler=log_and_continue),
-        wds.shuffle(100),
         wds.select(filter_no_caption_or_no_image),
         wds.decode("pilrgb", handler=log_and_continue),
         wds.rename(image="jpg;png;jpeg;webp"),
@@ -198,7 +195,8 @@ def get_activations(args: Args):
     dataloader = get_dataloader(args, model.make_img_transform())
 
     dirpath = os.path.join(args.write_to, fs_safe(args.model_ckpt))
-    filename = "activations-{args.suffix}.bin" if args.suffix else "activations.bin"
+    os.makedirs(dirpath, exist_ok=True)
+    filename = f"activations-{args.suffix}.bin" if args.suffix else "activations.bin"
     filepath = os.path.join(dirpath, filename)
     arr = np.memmap(
         filepath,
@@ -207,24 +205,30 @@ def get_activations(args: Args):
         shape=(args.n_examples, recorder.n_layers, 1, args.d_model),
     )
 
+    start = 0
     for b, (images,) in enumerate(dataloader):
         images = images.to(args.device)
         model.img_encode(images)
         activations = recorder.activations.numpy()
-        arr[b * args.batch_size : b * args.batch_size + len(images)] = activations
+
+        end = start + len(images)
+        arr[start:end] = activations
+        start = end
+
         recorder.reset()
 
         if b % args.log_every == 0:
             logger.info(
                 "batch: %d, example: %d/%d (%.1f%%)",
                 b,
-                b * args.batch_size + len(images),
+                end,
                 args.n_examples,
-                (b * args.batch_size + len(images)) / args.n_examples * 100,
+                end / args.n_examples * 100,
             )
             arr.flush()
 
-    print(b * args.batch_size + len(images))
+    logger.info("Finished embedding %d images.", end)
+    arr.flush()
 
 
 @torch.no_grad

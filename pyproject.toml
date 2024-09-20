@@ -5,13 +5,16 @@ description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.11"
 dependencies = [
+    "aim>=3.24.0",
     "beartype>=0.18.5",
     "chex>=0.1.86",
     "datasets>=3.0.0",
     "equinox>=0.11.7",
-    "jax>=0.4.33",
+    "jax[cuda12]>=0.4.33",
     "jaxtyping>=0.2.34",
+    "marimo>=0.8.17",
     "open-clip-torch>=2.26.1",
+    "optax>=0.2.3",
     "setuptools>=75.1.0",
     "submitit>=1.5.2",
     "torch>=2.4.1",
