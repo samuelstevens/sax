@@ -1,5 +1,6 @@
 import logging
 import tomllib
+import dataclasses
 
 import beartype
 import tyro
@@ -80,7 +81,12 @@ def overwrite(args: sax.train.Args, override: sax.train.Args) -> sax.train.Args:
     Returns:
         sax.train.Args
     """
-    pass
+    override_dict = {
+        field.name: getattr(override, field.name)
+        for field in dataclasses.fields(override)
+        if getattr(override, field.name) != field.default
+    }
+    return dataclasses.replace(args, **override_dict)
 
 
 if __name__ == "__main__":
