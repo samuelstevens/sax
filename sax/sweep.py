@@ -61,10 +61,12 @@ def _sample_from(
 ) -> collections.abc.Iterator[dict[str, Primitive]]:
     # 1. Count the number of distributions and collect random fields
     random_fields = {k: v for k, v in config.items() if isinstance(v, dict)}
-    num_distributions = len(random_fields)
+    dim = len(random_fields)
 
     # 2. Sample for each distribution
+    values = roberts_sequence(n, dim, perturb=True, key=jax.random.key(seed=0))
     # 3. Scale each sample based on the min/max/dist.
+
     # 4. Return the sampled config.
     pass
 
@@ -85,7 +87,7 @@ def roberts_sequence(
     dim: int,
     root_iters: int = 10_000,
     complement_basis: bool = True,
-    shuffle: bool = False,
+    perturb: bool = True,
     key: jax.typing.ArrayLike | None = None,
     dtype=float,
 ):
@@ -125,6 +127,12 @@ def roberts_sequence(
 
     n = jnp.arange(num_points, dtype=dtype)
     x = n[:, None] * basis[None, :]
+
+    if perturb:
+        if key is None:
+            raise ValueError("key cannot be None when perturb=True")
+        key, subkey = jax.random.split(key)
+        x += jax.random.uniform(subkey, [dim])
 
     x, _ = jnp.modf(x)
 
