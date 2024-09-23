@@ -1,5 +1,6 @@
 import logging
 import tomllib
+import dataclasses
 
 import beartype
 import tyro
@@ -53,8 +54,24 @@ def sweep(
 def validate(
     config: dict[str, sax.sweep.Primitive], *, cls: type = sax.train.Args
 ) -> str | None:
-    breakpoint()
-    return "Not implemented."
+    errors = []
+    cls_fields = {field.name: field.type for field in dataclasses.fields(cls)}
+    
+    for key, value in config.items():
+        if key not in cls_fields:
+            errors.append(f"Field '{key}' is not present in {cls.__name__}")
+        else:
+            expected_type = cls_fields[key]
+            if not isinstance(value, expected_type):
+                errors.append(f"Field '{key}' has type {type(value).__name__}, but {cls.__name__} expects {expected_type.__name__}")
+    
+    for key in cls_fields:
+        if key not in config:
+            errors.append(f"Required field '{key}' is missing from the config")
+    
+    if errors:
+        return "\n".join(errors)
+    return None
 
 
 if __name__ == "__main__":
