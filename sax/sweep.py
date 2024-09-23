@@ -65,10 +65,22 @@ def _sample_from(
 
     # 2. Sample for each distribution
     values = roberts_sequence(n, dim, perturb=True, key=jax.random.key(seed=0))
-    # 3. Scale each sample based on the min/max/dist.
 
-    # 4. Return the sampled config.
-    pass
+    # 3. Scale each sample based on the min/max/dist
+    scaled_values = {}
+    for (key, dist), column in zip(random_fields.items(), values.T):
+        if dist['dist'] == 'loguniform':
+            scaled = jnp.exp(jnp.log(dist['min']) + column * (jnp.log(dist['max']) - jnp.log(dist['min'])))
+        else:
+            scaled = dist['min'] + column * (dist['max'] - dist['min'])
+        scaled_values[key] = scaled
+
+    # 4. Return the sampled configs
+    for i in range(n):
+        yield {
+            **{k: v for k, v in config.items() if not isinstance(v, dict)},
+            **{k: float(v[i]) for k, v in scaled_values.items()}
+        }
 
 
 def _newton_raphson(f, x, iters):
