@@ -59,7 +59,10 @@ def expand(
 def _sample_from(
     config: dict[str, Primitive | Distribution], *, n: int
 ) -> collections.abc.Iterator[dict[str, Primitive]]:
-    # 1. Count the number of distributions
+    # 1. Count the number of distributions and collect random fields
+    random_fields = {k: v for k, v in config.items() if isinstance(v, dict)}
+    num_distributions = len(random_fields)
+
     # 2. Sample for each distribution
     # 3. Scale each sample based on the min/max/dist.
     # 4. Return the sampled config.
