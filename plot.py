@@ -42,28 +42,30 @@ def plot_exp(ax, name: str, color: str):
         jnp.array([[exp.data["val_l0"], exp.data["val_loss"]] for exp in exps]), axis=0
     )
 
-    if len(points) > 2:
-        mask = is_pareto_efficient(points)
-        pareto_points = points[mask]
-        other_points = points[~mask]
+    if len(points) < 2:
+        print(f"Not enough data for '{name}'.")
+        return
 
+    mask = is_pareto_efficient(points)
+    pareto_points = points[mask]
+    other_points = points[~mask]
+
+    if len(other_points):
         ax.scatter(
             other_points[:, 0],
             other_points[:, 1],
             alpha=0.2,
-            label=f"{name} (hparam. sweep)",
+            label=f"{name} (hparam sweep)",
             color=color,
         )
 
-        ax.plot(
-            pareto_points[:, 0],
-            pareto_points[:, 1],
-            color=color,
-            label=f"{name} (optimal)",
-            marker="o",
-        )
-    else:
-        ax.scatter(points[:, 0], points[:, 1], label=f"{name} (all)", color=color)
+    ax.plot(
+        pareto_points[:, 0],
+        pareto_points[:, 1],
+        label=f"{name} (pareto frontier)",
+        marker="o",
+        color=color,
+    )
 
 
 @beartype.beartype
