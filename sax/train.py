@@ -50,15 +50,15 @@ class Args:
     """peak learning rate."""
     beta1: float = 0.9
     beta2: float = 0.999
-    n_lr_warmup: int = 1_000
+    n_lr_warmup: int = 300
     """number of learning rate warmup steps."""
-    n_sparsity_warmup: int = 10_000
-    # """number of sparsity coefficient warmup steps."""
+    n_sparsity_warmup: int = 1_000
+    """number of sparsity coefficient warmup steps."""
     grad_clip: float = 0.0
     """maximum gradient norm. 0.0 indicates no maximum."""
-    n_epochs: int = 1
+    n_epochs: int = 4
     """number of epochs."""
-    pre_enc_bias: bool = False
+    pre_enc_bias: bool = True
     """whether to subtract b_dec before sae."""
 
     seed: int = 42
