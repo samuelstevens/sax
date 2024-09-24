@@ -1,4 +1,5 @@
 import collections.abc
+import typing
 import dataclasses
 import logging
 import os.path
@@ -18,6 +19,9 @@ import wandb
 from . import helpers, nn, tracking
 
 
+DataNorm = typing.Literal[None, "example", "batch"]
+
+
 @beartype.beartype
 @dataclasses.dataclass(frozen=True)
 class Args:
@@ -33,6 +37,8 @@ class Args:
     """number of train activations"""
     n_val: int = 50_000
     """number of val activations"""
+    data_norm: DataNorm = None
+    """how to normalize activations before auto-encoding."""
 
     expansion_factor: int = 64
     """how many times larger the SAE's hidden layer should be."""
@@ -98,12 +104,25 @@ def step(
     state: optax.OptState | optax.MultiStepsState,
     batch: Float[Array, "batch d_model"],
     sparsity_coeff: Float[Array, ""],
+    data_norm: DataNorm,
 ) -> tuple[
     eqx.Module,
     optax.OptState | optax.MultiStepsState,
     Float[Array, ""],
     Float[Array, ""],
 ]:
+    if data_norm == "batch":
+        breakpoint()
+        batch_norm = None
+        batch = batch / batch_norm
+    elif data_norm == "example":
+        example_norms = jnp.linalg.norm(batch, axis=1, keepdims=True)
+        batch = batch / example_norms
+    elif data_norm is None:
+        pass
+    else:
+        typing.assert_never(data_norm)
+
     (loss, l0), grads = eqx.filter_value_and_grad(model.loss, has_aux=True)(
         model, batch, sparsity_coeff
     )
@@ -119,6 +138,18 @@ def evaluate(args: Args, sae: eqx.Module, key: chex.PRNGKey) -> dict[str, float]
     def _compute_loss(
         model: eqx.Module, batch: Float[Array, "b d"]
     ) -> tuple[Float[Array, ""], Float[Array, ""]]:
+        if args.data_norm == "batch":
+            breakpoint()
+            batch_norm = None
+            batch = batch / batch_norm
+        elif args.data_norm == "example":
+            example_norms = jnp.linalg.norm(batch, axis=1, keepdims=True)
+            batch = batch / example_norms
+        elif args.data_norm is None:
+            pass
+        else:
+            typing.assert_never(args.data_norm)
+
         loss, l0 = model.loss(model, batch, args.sparsity_coeff)
         return loss, l0
 
@@ -128,6 +159,7 @@ def evaluate(args: Args, sae: eqx.Module, key: chex.PRNGKey) -> dict[str, float]
         loss, l0 = _compute_loss(sae, batch)
         losses.append(loss)
         l0s.append(l0)
+
     return {
         "val_loss": jnp.mean(jnp.array(losses)).item(),
         "val_l0": jnp.mean(jnp.array(l0s)).item(),
@@ -185,7 +217,7 @@ def train(args: Args) -> str:
         # Iterate through all examples in random order.
         for batch in train_dataloader:
             sae, state, loss, l0 = step(
-                sae, optim, state, batch, sparsity_schedule(global_step)
+                sae, optim, state, batch, sparsity_schedule(global_step), args.data_norm
             )
             global_step += 1
 
