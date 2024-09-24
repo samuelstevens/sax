@@ -69,8 +69,11 @@ class ReluSAE(eqx.Module):
     b_enc: Float[Array, " d_hidden"]
     w_dec: Float[Array, "d_in d_hidden"]
     b_dec: Float[Array, " d_in"]
+    pre_enc_bias: bool
 
-    def __init__(self, d_in: int, d_hidden: int, *, key: chex.PRNGKey):
+    def __init__(
+        self, d_in: int, d_hidden: int, *, pre_enc_bias: bool, key: chex.PRNGKey
+    ):
         init_fn = jax.nn.initializers.he_uniform()
         w_dec = init_fn(key, (d_in, d_hidden), jnp.float32)
         # Re-scale each latent vector to have unit norm. w_dec is [n_features, d_model], so we want to take the norm along axis=1 (0-indexed).
@@ -83,9 +86,13 @@ class ReluSAE(eqx.Module):
         self.b_enc = jnp.zeros((d_hidden,))
         self.b_dec = jnp.zeros((d_in,))
 
+        self.pre_enc_bias = pre_enc_bias
+
     def __call__(
         self, x: Float[Array, " d_in"]
     ) -> tuple[Float[Array, " d_in"], Float[Array, " d_hidden"]]:
+        if self.pre_enc_bias:
+            x = x - self.b_dec
         x = self.w_enc @ x + self.b_enc
         f_x = jax.nn.relu(x)
         x_hat = self.w_dec @ f_x + self.b_dec
@@ -93,7 +100,9 @@ class ReluSAE(eqx.Module):
 
     @staticmethod
     def loss(
-        model: typing.Self, x: Float[Array, "batch d_in"], sparsity_coeff: float
+        model: typing.Self,
+        x: Float[Array, "batch d_in"],
+        sparsity_coeff: Float[Array, ""],
     ) -> tuple[Float[Array, ""], Float[Array, ""]]:
         x_hat, f_x = jax.vmap(model)(x)
 
@@ -112,7 +121,9 @@ class ReluSAE(eqx.Module):
 class ReparamInvariantReluSAE(ReluSAE):
     @staticmethod
     def loss(
-        model: typing.Self, x: Float[Array, "batch d_in"], sparsity_coeff: float
+        model: typing.Self,
+        x: Float[Array, "batch d_in"],
+        sparsity_coeff: Float[Array, ""],
     ) -> tuple[Float[Array, ""], Float[Array, ""]]:
         x_hat, f_x = jax.vmap(model)(x)
 

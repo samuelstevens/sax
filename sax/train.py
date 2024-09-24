@@ -144,6 +144,7 @@ def train(args: Args) -> str:
     model_kwargs = {
         "d_in": args.d_model,
         "d_hidden": args.expansion_factor * args.d_model,
+        "pre_enc_bias": args.pre_enc_bias,
     }
     sae = nn.ReparamInvariantReluSAE(**model_kwargs, key=subkey)
     n_steps = jnp.ceil(args.n_train * args.n_layers * args.n_epochs / args.batch_size)
