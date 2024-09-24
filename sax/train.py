@@ -81,18 +81,19 @@ def make_dataloader(
     activations_path = args.train_activations if is_train else args.val_activations
     shape = (n_activations, args.n_layers, args.d_model)
     data = np.memmap(activations_path, dtype=np.float32, mode="r", shape=shape)
-    data = data.reshape(n_activations * args.n_layers, args.d_model)
+    n_examples = n_activations * args.n_layers
+    data = data.reshape(n_examples, args.d_model)
 
     # Double batch size for validation (no gradients)
     batch_size = args.batch_size + is_train * args.batch_size
 
-    i = jax.random.permutation(key, n_activations)
+    i = jax.random.permutation(key, n_examples)
     start = 0
     while True:
-        end = min(start + batch_size, n_activations)
+        end = min(start + batch_size, n_examples)
         yield jnp.array(data[i[start:end]])
         start = end
-        if start >= n_activations:
+        if start >= n_examples:
             break
 
 
@@ -179,10 +180,12 @@ def train(args: Args) -> str:
         "pre_enc_bias": args.pre_enc_bias,
     }
     sae = nn.ReparamInvariantReluSAE(**model_kwargs, key=subkey)
-    n_steps = jnp.ceil(args.n_train * args.n_layers * args.n_epochs / args.batch_size)
     sparsity_schedule = optax.schedules.warmup_constant_schedule(
         0.0, args.sparsity_coeff, args.n_sparsity_warmup
     )
+    n_steps = jnp.ceil(
+        args.n_train * args.n_layers * args.n_epochs / args.batch_size
+    ).astype(int)
     lr_schedule = optax.schedules.warmup_cosine_decay_schedule(
         0.0, args.learning_rate, args.n_lr_warmup, n_steps
     )
