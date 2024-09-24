@@ -1,5 +1,6 @@
 import collections.abc
 import typing
+import tyro
 import dataclasses
 import logging
 import os.path
@@ -256,3 +257,10 @@ def train(args: Args) -> str:
     tracking.save(run.id, hparams, dict(run.summary))
     run.finish()
     return run.id
+
+
+if __name__ == "__main__":
+    log_format = "[%(asctime)s] [%(levelname)s] [%(name)s] %(message)s"
+    logging.basicConfig(level=logging.INFO, format=log_format)
+
+    train(tyro.cli(Args))
