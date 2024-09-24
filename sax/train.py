@@ -97,7 +97,7 @@ def step(
     optim: optax.GradientTransformation | optax.MultiSteps,
     state: optax.OptState | optax.MultiStepsState,
     batch: Float[Array, "batch d_model"],
-    sparsity_coeff: float,
+    sparsity_coeff: Float[Array, ""],
 ) -> tuple[
     eqx.Module,
     optax.OptState | optax.MultiStepsState,
@@ -147,6 +147,9 @@ def train(args: Args) -> str:
     }
     sae = nn.ReparamInvariantReluSAE(**model_kwargs, key=subkey)
     n_steps = jnp.ceil(args.n_train * args.n_layers * args.n_epochs / args.batch_size)
+    sparsity_schedule = optax.schedules.warmup_constant_schedule(
+        0.0, args.sparsity_coeff, args.n_sparsity_warmup
+    )
     lr_schedule = optax.schedules.warmup_cosine_decay_schedule(
         0.0, args.learning_rate, args.n_lr_warmup, n_steps
     )
@@ -180,16 +183,19 @@ def train(args: Args) -> str:
 
         # Iterate through all examples in random order.
         for batch in train_dataloader:
-            sae, state, loss, l0 = step(sae, optim, state, batch, args.sparsity_coeff)
+            sae, state, loss, l0 = step(
+                sae, optim, state, batch, sparsity_schedule(global_step)
+            )
             global_step += 1
 
             if global_step % args.log_every == 0:
                 step_per_sec = global_step / (time.time() - start_time)
                 metrics = {
-                    "train_loss": loss.item(),
+                    "train/loss": loss.item(),
                     "step_per_sec": step_per_sec,
                     "learning_rate": lr_schedule(global_step).item(),
-                    "train_l0": l0.item(),
+                    "sparsity_coeff": sparsity_schedule(global_step).item(),
+                    "train/l0": l0.item(),
                     "epoch": epoch,
                 }
                 run.log(metrics, step=global_step)

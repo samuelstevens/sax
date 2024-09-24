@@ -1,0 +1,14 @@
+# Data
+train_activations = "/local/scratch/stevens.994/datasets/sax/ViT-B-16_openai/activations-imagenet-train.bin"
+n_train = 1281167
+val_activations = "/local/scratch/stevens.994/datasets/sax/ViT-B-16_openai/activations-imagenet-val.bin"
+n_val = 50000
+
+# Modeling
+expansion_factor = [8, 16, 32, 64]
+sparsity_coeff = { min = 1e-6, max = 1e-2, dist = "loguniform" }
+learning_rate = { min = 1e-5, max = 1e-2, dist = "loguniform" }
+n_sparsity_warmup = 10_000
+n_epochs = 20
+pre_enc_bias = [false]
+
