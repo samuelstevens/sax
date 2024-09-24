@@ -1,13 +1,14 @@
-import logging
-import tomllib
 import dataclasses
+import logging
+import os.path
+import tomllib
 
 import beartype
+import submitit
 import tyro
 
 import sax.sweep
 import sax.train
-import submitit
 
 log_format = "[%(asctime)s] [%(levelname)s] [%(name)s] %(message)s"
 logging.basicConfig(level=logging.INFO, format=log_format)
@@ -16,7 +17,7 @@ logger = logging.getLogger("launch")
 
 @beartype.beartype
 def main(
-    configs: list[str],
+    config_file: str,
     /,
     n_per_discrete: int = 1,
     slurm: bool = False,
@@ -30,24 +31,12 @@ def main(
         n_per_discrete: number of random samples to draw for each *discrete* config.
         slurm: whether to use a slurm cluster for running jobs or a local GPU.
     """
-    for file in configs:
-        with open(file, "rb") as fd:
-            config = tomllib.load(fd)
-        sweep(config, n_per_discrete=n_per_discrete, slurm=slurm, override=override)
+    with open(config_file, "rb") as fd:
+        sweep_config = tomllib.load(fd)
 
-
-@beartype.beartype
-def sweep(
-    sweep_config: dict[
-        str, sax.sweep.Primitive | list[sax.sweep.Primitive] | sax.sweep.Distribution
-    ],
-    *,
-    n_per_discrete: int,
-    slurm: bool,
-    override: sax.train.Args,
-) -> None:
     configs = list(sax.sweep.expand(sweep_config, n_per_discrete=n_per_discrete))
     logger.info("Sweep has %d experiments.", len(configs))
+
     sweep_args, errs = [], []
     for config in configs:
         try:
@@ -64,12 +53,19 @@ def sweep(
     else:
         executor = submitit.DebugExecutor(folder="logs")
 
-    sweep_args = [overwrite(args, override) for args in sweep_args]
+    # Include filename in experiment tags.
+    exp_name, _ = os.path.splitext(os.path.basename(config_file))
+    sweep_args = [
+        dataclasses.replace(overwrite(args, override), tags=args.tags + [exp_name])
+        for args in sweep_args
+    ]
     jobs = executor.map_array(sax.train.train, sweep_args)
-    for result in submitit.helpers.as_completed(jobs):
-        breakpoint()
+    for i, result in enumerate(submitit.helpers.as_completed(jobs)):
+        exp_id = result.result()
+        logger.info("Finished task %s (%d/%d)", exp_id, i + 1, len(jobs))
 
 
+@beartype.beartype
 def overwrite(args: sax.train.Args, override: sax.train.Args) -> sax.train.Args:
     """
     If there are any non-default values in override, returns a copy of `args` with all those values included.

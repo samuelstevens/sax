@@ -1,9 +1,9 @@
 import collections.abc
 import typing
-import jax
-import jax.numpy as jnp
 
 import beartype
+import jax
+import jax.numpy as jnp
 
 Primitive = float | int | bool | str
 
@@ -37,20 +37,11 @@ def _expand_discrete(
 
 @beartype.beartype
 def expand(
-    config: dict[str, Primitive | list[Primitive] | Distribution], *, n: int
+    config: dict[str, Primitive | list[Primitive] | Distribution],
+    *,
+    n_per_discrete: int,
 ) -> collections.abc.Iterator[dict[str, Primitive]]:
     discrete_configs = list(_expand_discrete(config))
-    n_discrete_configs = len(discrete_configs)
-
-    if n < n_discrete_configs:
-        msg = f"You requested {n} total configs, but there are {n_discrete_configs} discrete configs."
-        raise RuntimeError(msg)
-
-    if n % n_discrete_configs != 0:
-        msg = f"You requested {n} total configs, but there are {n_discrete_configs} discrete configs, which would lead to uneven sampling from the discrete configs."
-        raise RuntimeError(msg)
-
-    n_per_discrete = n // n_discrete_configs
     for config in discrete_configs:
         yield from _sample_from(config, n=n_per_discrete)
 
@@ -69,17 +60,23 @@ def _sample_from(
     # 3. Scale each sample based on the min/max/dist
     scaled_values = {}
     for (key, dist), column in zip(random_fields.items(), values.T):
-        if dist['dist'] == 'loguniform':
-            scaled = jnp.exp(jnp.log(dist['min']) + column * (jnp.log(dist['max']) - jnp.log(dist['min'])))
+        if dist["dist"] == "loguniform":
+            scaled = jnp.exp(
+                jnp.log(dist["min"])
+                + column * (jnp.log(dist["max"]) - jnp.log(dist["min"]))
+            )
+        elif dist["dist"] == "uniform":
+            scaled = dist["min"] + column * (dist["max"] - dist["min"])
         else:
-            scaled = dist['min'] + column * (dist['max'] - dist['min'])
+            typing.assert_never(dist["dist"])
+
         scaled_values[key] = scaled
 
     # 4. Return the sampled configs
     for i in range(n):
         yield {
             **{k: v for k, v in config.items() if not isinstance(v, dict)},
-            **{k: float(v[i]) for k, v in scaled_values.items()}
+            **{k: v[i].item() for k, v in scaled_values.items()},
         }
 
 
@@ -116,9 +113,6 @@ def roberts_sequence(
       complement_basis: Complement the basis to improve precision, as described
         in https://www.martysmods.com/a-better-r2-sequence.
       key: a PRNG key.
-      shuffle: Shuffle the elements of the sequence before returning them.
-        Warning: This degrades the low-discrepancy property for prefixes of
-        the output sequence.
       dtype: optional, a float dtype for the returned values (default float64 if
         jax_enable_x64 is true, otherwise float32).
     Returns:
@@ -147,10 +141,5 @@ def roberts_sequence(
         x += jax.random.uniform(subkey, [dim])
 
     x, _ = jnp.modf(x)
-
-    if shuffle:
-        if key is None:
-            raise ValueError("key cannot be None when shuffle=True")
-        x = jax.random.permutation(key, x)
 
     return x

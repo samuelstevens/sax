@@ -6,16 +6,19 @@ app = marimo.App(width="full")
 
 @app.cell
 def __():
+    import time
+
+    import beartype
+    import datasets
+    import jax
+    import jax.numpy as jnp
     import marimo as mo
     import numpy as np
-    import datasets
-    import sax.nn
-    import sax.helpers
-    import jax
-    import time
-    import jax.numpy as jnp
-    import beartype
     from jaxtyping import Array, Float, Int, jaxtyped
+
+    import sax.helpers
+    import sax.nn
+
     return (
         Array,
         Float,
@@ -63,7 +66,6 @@ def __(Array, Int, datasets, indices):
                 image.thumbnail((128, 128))
             return images
 
-
     images = Images(indices)
     return Images, images
 
@@ -71,7 +73,7 @@ def __(Array, Int, datasets, indices):
 @app.cell
 def __(mo):
     neuron_picker = mo.ui.text(value="0")
-    return neuron_picker,
+    return (neuron_picker,)
 
 
 @app.cell
@@ -79,7 +81,8 @@ def __(mo):
     def grid(images, *, n_cols: int = 8):
         rows = [images[i : i + n_cols] for i in range(0, len(images), n_cols)]
         return mo.vstack([mo.hstack(row) for row in rows], gap=0)
-    return grid,
+
+    return (grid,)
 
 
 @app.cell
@@ -125,9 +128,10 @@ def __(Array, Float, Int, beartype, jax, jaxtyped, jnp, np, sax, time):
     ) -> tuple[Float[Array, "n_features 16"], Int[Array, "n_features 16"]]:
         at = jax.vmap(jnp.searchsorted)(scores, incoming_scores)
         scores = jax.vmap(jnp.insert)(scores, at, incoming_scores)[:, :-1]
-        indices = jax.vmap(jnp.insert, in_axes=(0, 0, None))(indices, at, incoming_index)[:, :-1]
+        indices = jax.vmap(jnp.insert, in_axes=(0, 0, None))(
+            indices, at, incoming_index
+        )[:, :-1]
         return scores, indices
-
 
     def sort_image_feature_sims(activations_path, ckpt_path, *, batch_size: int = 4096):
         sae = sax.helpers.load(ckpt_path, sax.nn.ReparamInvariantReluSAE)
@@ -144,20 +148,21 @@ def __(Array, Float, Int, beartype, jax, jaxtyped, jnp, np, sax, time):
         start = 0
         while True:
             end = min(start + batch_size, n_activations)
-            
+
             batch = jnp.array(data[start:end, -1])
             _, f_x = jax.vmap(sae)(batch)
             for i in range(end - start):
                 scores, indices = push(scores, indices, -f_x[i], start + i)
             # Progress meter.
-            print(f"{end}/{n_activations} ({end/n_activations*100:.1f}%) at {end / (time.time() - start_time):.1f} ex/s")
+            print(
+                f"{end}/{n_activations} ({end / n_activations * 100:.1f}%) at {end / (time.time() - start_time):.1f} ex/s"
+            )
             start = end
-            
+
             if start >= n_activations:
                 break
 
         return scores, indices
-
 
     _, indices = sort_image_feature_sims(
         "/local/scratch/stevens.994/datasets/sax/ViT-B-16_openai/activations-imagenet.bin",

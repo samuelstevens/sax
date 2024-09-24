@@ -94,7 +94,7 @@ class ReluSAE(eqx.Module):
     @staticmethod
     def loss(
         model: typing.Self, x: Float[Array, "batch d_in"], sparsity_coeff: float
-    ) -> Float[Array, ""]:
+    ) -> tuple[Float[Array, ""], Float[Array, ""]]:
         x_hat, f_x = jax.vmap(model)(x)
 
         reconstruct_err = x - x_hat
@@ -103,14 +103,17 @@ class ReluSAE(eqx.Module):
         l1 = jnp.linalg.norm(f_x, ord=1, axis=-1)
         sparsity_loss = sparsity_coeff * l1
 
-        return jnp.mean(reconstruct_loss + sparsity_loss)
+        # Measure l0 sparsity as auxilary metric.
+        l0 = jnp.sum(f_x > 0, axis=1)
+
+        return jnp.mean(reconstruct_loss + sparsity_loss), jnp.mean(l0)
 
 
 class ReparamInvariantReluSAE(ReluSAE):
     @staticmethod
     def loss(
         model: typing.Self, x: Float[Array, "batch d_in"], sparsity_coeff: float
-    ) -> Float[Array, ""]:
+    ) -> tuple[Float[Array, ""], Float[Array, ""]]:
         x_hat, f_x = jax.vmap(model)(x)
 
         reconstruct_err = x - x_hat
@@ -121,4 +124,7 @@ class ReparamInvariantReluSAE(ReluSAE):
         ri_l1 = f_x @ jnp.linalg.norm(model.w_dec, axis=0)
         sparsity_loss = sparsity_coeff * ri_l1
 
-        return jnp.mean(reconstruct_loss + sparsity_loss)
+        # Measure l0 sparsity as auxilary metric.
+        l0 = jnp.sum(f_x > 0, axis=1)
+
+        return jnp.mean(reconstruct_loss + sparsity_loss), jnp.mean(l0)

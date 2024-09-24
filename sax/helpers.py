@@ -1,9 +1,10 @@
 import dataclasses
 import json
-import jax
-import equinox as eqx
+import os
 
 import beartype
+import equinox as eqx
+import jax
 
 #############
 # Functions #
@@ -50,6 +51,7 @@ def to_aim_value(value: object):
 
 @beartype.beartype
 def save(filename: str, model_kwargs: dict[str, object], model: eqx.Module):
+    os.makedirs(os.path.dirname(filename), exist_ok=True)
     with open(filename, "wb") as fd:
         kwargs_str = json.dumps(model_kwargs)
         fd.write((kwargs_str + "\n").encode("utf-8"))
@@ -62,16 +64,3 @@ def load(filename, cls: type[eqx.Module]) -> eqx.Module:
         kwargs = json.loads(fd.readline().decode())
         model = cls(key=jax.random.key(seed=0), **kwargs)
         return eqx.tree_deserialise_leaves(fd, model)
-
-
-###########
-# Classes #
-###########
-
-
-class DummyAimRun:
-    def __init__(self, *args, **kwargs):
-        self.hash = "dummy-run-hash"
-
-    def track(self, metrics: dict[str, object], step: int):
-        pass
