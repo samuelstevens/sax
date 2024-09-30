@@ -24,7 +24,7 @@ def main(
     override: sax.train.Args = sax.train.Args(),
 ):
     """
-    Start a hyperparameter sweep of training runs using either a Slurm cluster or a local GPU. Results are written to an Aim repo, which can be queried for final metrics to make plots like those you see in SAE papers (comparing sparsity and reconstruction loss).
+    Start a hyperparameter sweep of training runs using either a Slurm cluster or a local GPU. Results are written to a sqlite database, which can be queried for final metrics to make plots like those you see in SAE papers (comparing sparsity and reconstruction loss).
 
     Args:
         configs: list of config filepaths.

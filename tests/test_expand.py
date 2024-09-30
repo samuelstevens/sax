@@ -15,7 +15,7 @@ class DummyConfig:
 
 def test_expand_one_list_field():
     sweep_config = {"a": [1, 2, 3], "b": 0}
-    actual = list(sax.sweep.expand(sweep_config))
+    actual = list(sax.sweep.expand(sweep_config, n_per_discrete=1))
     expected = [
         {"a": 1, "b": 0},
         {"a": 2, "b": 0},
@@ -26,7 +26,7 @@ def test_expand_one_list_field():
 
 def test_expand_two_list_fields():
     sweep_config = {"a": [1, 2, 3], "b": ["a", "b"]}
-    actual = list(sax.sweep.expand(sweep_config))
+    actual = list(sax.sweep.expand(sweep_config, n_per_discrete=1))
     expected = [
         {"a": 1, "b": "a"},
         {"a": 1, "b": "b"},

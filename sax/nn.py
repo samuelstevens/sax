@@ -64,6 +64,32 @@ jumprelu.defvjp(jumprelu_fwd, jumprelu_bwd)
 
 
 @jaxtyped(typechecker=beartype.beartype)
+class Loss(eqx.Module):
+    reconstruction: Float[Array, ""]
+    sparsity: Float[Array, ""]
+    l0: Float[Array, ""]
+    trivial: Float[Array, ""]
+
+    @property
+    def loss(self) -> Float[Array, ""]:
+        return self.reconstruction + self.sparsity
+
+    @property
+    def fvu(self) -> Float[Array, ""]:
+        return self.loss / self.trivial
+
+    def to_dict(self) -> dict[str, float]:
+        return {
+            "train/loss": self.loss.item(),
+            "train/reconstruction": self.reconstruction.item(),
+            "train/sparsity": self.sparsity.item(),
+            "train/fvu": self.fvu.item(),
+            "train/l0": self.l0.item(),
+            "train/trivial": self.trivial.item(),
+        }
+
+
+@jaxtyped(typechecker=beartype.beartype)
 class ReluSAE(eqx.Module):
     w_enc: Float[Array, "d_hidden d_in"]
     b_enc: Float[Array, " d_hidden"]
@@ -103,39 +129,49 @@ class ReluSAE(eqx.Module):
         model: typing.Self,
         x: Float[Array, "batch d_in"],
         sparsity_coeff: Float[Array, ""],
-    ) -> tuple[Float[Array, ""], Float[Array, ""]]:
+    ) -> Loss:
         x_hat, f_x = jax.vmap(model)(x)
 
         reconstruct_err = x - x_hat
-        reconstruct_loss = jnp.sum(reconstruct_err**2, axis=-1)
+        reconstruct_loss = jnp.sum(reconstruct_err**2, axis=-1).mean()
 
         l1 = jnp.linalg.norm(f_x, ord=1, axis=-1)
-        sparsity_loss = sparsity_coeff * l1
+        sparsity_loss = (sparsity_coeff * l1).mean()
 
         # Measure l0 sparsity as auxilary metric.
-        l0 = jnp.sum(f_x > 0, axis=1)
+        l0 = jnp.sum(f_x > 0, axis=1).mean()
 
-        return jnp.mean(reconstruct_loss + sparsity_loss), jnp.mean(l0)
+        # Measure trivial loss, the loss obtained by choosing the batch mean.
+        trivial_err = x - x.mean(axis=0)
+        trivial_loss = (trivial_err**2).sum(axis=-1).mean()
+
+        return Loss(reconstruct_loss, sparsity_loss, l0, trivial_loss)
 
 
+@jaxtyped(typechecker=beartype.beartype)
 class ReparamInvariantReluSAE(ReluSAE):
     @staticmethod
     def loss(
         model: typing.Self,
         x: Float[Array, "batch d_in"],
         sparsity_coeff: Float[Array, ""],
-    ) -> tuple[Float[Array, ""], Float[Array, ""]]:
+        mean_act: Float[Array, " d_in"] | None = None,
+    ) -> Loss:
         x_hat, f_x = jax.vmap(model)(x)
 
         reconstruct_err = x - x_hat
-        reconstruct_loss = jnp.sum(reconstruct_err**2, axis=-1)
+        reconstruct_loss = jnp.sum(reconstruct_err**2, axis=-1).mean()
 
         # Reparameterization-invariant L1
         # sum_^M f_x_i * ||d_i||2
         ri_l1 = f_x @ jnp.linalg.norm(model.w_dec, axis=0)
-        sparsity_loss = sparsity_coeff * ri_l1
+        sparsity_loss = (sparsity_coeff * ri_l1).mean()
 
         # Measure l0 sparsity as auxilary metric.
-        l0 = jnp.sum(f_x > 0, axis=1)
+        l0 = jnp.sum(f_x > 0, axis=1).mean()
 
-        return jnp.mean(reconstruct_loss + sparsity_loss), jnp.mean(l0)
+        # Measure trivial loss, the loss obtained by choosing the batch mean.
+        trivial_err = x - x.mean(axis=0)
+        trivial_loss = (trivial_err**2).sum(axis=-1).mean()
+
+        return Loss(reconstruct_loss, sparsity_loss, l0, trivial_loss)

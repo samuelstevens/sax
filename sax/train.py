@@ -1,10 +1,9 @@
 import collections.abc
-import typing
-import tyro
 import dataclasses
 import logging
 import os.path
 import time
+import typing
 
 import beartype
 import chex
@@ -13,12 +12,12 @@ import jax
 import jax.numpy as jnp
 import numpy as np
 import optax
+import tyro
 from jaxtyping import Array, Float, jaxtyped
 
 import wandb
 
 from . import helpers, nn, tracking
-
 
 DataNorm = typing.Literal[None, "example", "batch"]
 
@@ -99,6 +98,22 @@ def make_dataloader(
 
 
 @jaxtyped(typechecker=beartype.beartype)
+def normalize(
+    kind: DataNorm, batch: Float[Array, "batch d_model"]
+) -> Float[Array, "batch d_model"]:
+    if kind == "batch":
+        breakpoint()
+        batch_norm = None
+        batch = batch / batch_norm
+    if kind == "example":
+        example_norms = jnp.linalg.norm(batch, axis=1, keepdims=True)
+        return batch / example_norms
+    if kind is None:
+        return batch
+    typing.assert_never(kind)
+
+
+@jaxtyped(typechecker=beartype.beartype)
 @eqx.filter_jit(donate="all")
 def step(
     model: eqx.Module,
@@ -107,71 +122,59 @@ def step(
     batch: Float[Array, "batch d_model"],
     sparsity_coeff: Float[Array, ""],
     data_norm: DataNorm,
-) -> tuple[
-    eqx.Module,
-    optax.OptState | optax.MultiStepsState,
-    Float[Array, ""],
-    Float[Array, ""],
-]:
-    if data_norm == "batch":
-        breakpoint()
-        batch_norm = None
-        batch = batch / batch_norm
-    elif data_norm == "example":
-        example_norms = jnp.linalg.norm(batch, axis=1, keepdims=True)
-        batch = batch / example_norms
-    elif data_norm is None:
-        pass
-    else:
-        typing.assert_never(data_norm)
+) -> tuple[eqx.Module, optax.OptState | optax.MultiStepsState, nn.Loss]:
+    batch = normalize(data_norm, batch)
 
-    (loss, l0), grads = eqx.filter_value_and_grad(model.loss, has_aux=True)(
-        model, batch, sparsity_coeff
-    )
+    @jaxtyped(typechecker=beartype.beartype)
+    def _compute_loss(model: eqx.Module) -> tuple[Float[Array, ""], nn.Loss]:
+        """Compute loss. Return the complete loss (loss.loss) as the first term for optimization and the pytree `loss` for metrics."""
+        loss = model.loss(model, batch, sparsity_coeff)
+        return loss.loss, loss
+
+    (_, loss), grads = eqx.filter_value_and_grad(_compute_loss, has_aux=True)(model)
     updates, new_state = optim.update(grads, state, model)
     model = eqx.apply_updates(model, updates)
-    return model, new_state, loss, l0
+    return model, new_state, loss
 
 
 @jaxtyped(typechecker=beartype.beartype)
 def evaluate(args: Args, sae: eqx.Module, key: chex.PRNGKey) -> dict[str, float]:
+    """
+    Evaluates a sparse autoencoder on the validation datset, computing mean L2 loss, mean L0 sparsity, and the trivial validation loss using the mean batch activation.
+
+    Args:
+        args: run configuration.
+        sae: the sparse autoencoder under evaluation.
+
+    Returns:
+        A dictionary of metrics.
+    """
+
     @jaxtyped(typechecker=beartype.beartype)
     @eqx.filter_jit(donate="all-except-first")
-    def _compute_loss(
-        model: eqx.Module, batch: Float[Array, "b d"]
-    ) -> tuple[Float[Array, ""], Float[Array, ""]]:
-        if args.data_norm == "batch":
-            breakpoint()
-            batch_norm = None
-            batch = batch / batch_norm
-        elif args.data_norm == "example":
-            example_norms = jnp.linalg.norm(batch, axis=1, keepdims=True)
-            batch = batch / example_norms
-        elif args.data_norm is None:
-            pass
-        else:
-            typing.assert_never(args.data_norm)
+    def _compute_loss(model: eqx.Module, batch: Float[Array, "b d"]) -> nn.Loss:
+        batch = normalize(args.data_norm, batch)
 
-        loss, l0 = model.loss(model, batch, args.sparsity_coeff)
-        return loss, l0
+        loss = model.loss(model, batch, args.sparsity_coeff)
 
+        return loss
+
+    # We need to shuffle the validation data because we use the batch mean to calculate the trivial loss, so we don't want the examples to be correlated.
     dataloader = make_dataloader(args, key, is_train=False)
-    losses, l0s = [], []
+    losses = []
     for batch in dataloader:
-        loss, l0 = _compute_loss(sae, batch)
+        loss = _compute_loss(sae, batch)
         losses.append(loss)
-        l0s.append(l0)
 
-    return {
-        "val_loss": jnp.mean(jnp.array(losses)).item(),
-        "val_l0": jnp.mean(jnp.array(l0s)).item(),
-    }
+    mean = jax.tree.map(lambda *x: jnp.array(x).mean(), *losses)
+
+    return {f"val/{key}": value for key, value in mean.to_dict().items()}
 
 
 @beartype.beartype
 def train(args: Args) -> str:
     key = jax.random.key(seed=args.seed)
-    logger = logging.getLogger("sax.train")
+    logger = logging.getLogger(__file__)
 
     # 1. Define the model and optimizers.
     key, subkey = jax.random.split(key)
@@ -220,7 +223,7 @@ def train(args: Args) -> str:
 
         # Iterate through all examples in random order.
         for batch in train_dataloader:
-            sae, state, loss, l0 = step(
+            sae, state, loss = step(
                 sae, optim, state, batch, sparsity_schedule(global_step), args.data_norm
             )
             global_step += 1
@@ -228,18 +231,17 @@ def train(args: Args) -> str:
             if global_step % args.log_every == 0:
                 step_per_sec = global_step / (time.time() - start_time)
                 metrics = {
-                    "train/loss": loss.item(),
+                    **loss.to_dict(),
                     "step_per_sec": step_per_sec,
                     "learning_rate": lr_schedule(global_step).item(),
                     "sparsity_coeff": sparsity_schedule(global_step).item(),
-                    "train/l0": l0.item(),
                     "epoch": epoch,
                 }
                 run.log(metrics, step=global_step)
                 logger.info(
                     "step: %d, loss: %.5f, step/sec: %.2f",
                     global_step,
-                    loss.item(),
+                    loss.loss.item(),
                     step_per_sec,
                 )
 

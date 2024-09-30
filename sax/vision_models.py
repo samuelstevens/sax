@@ -37,8 +37,8 @@ class VisionBackbone(torch.nn.Module):
         err_msg = f"{self.__class__.__name__} must implemented make_img_transform()."
         raise NotImplementedError(err_msg)
 
-    def mlps(self) -> collections.abc.Iterator[torch.nn.Module]:
-        err_msg = f"{self.__class__.__name__} must implemented mlps()."
+    def layers(self) -> collections.abc.Iterator[torch.nn.Module]:
+        err_msg = f"{self.__class__.__name__} must implemented layers()."
         raise NotImplementedError(err_msg)
 
 
@@ -81,9 +81,9 @@ class OpenClip(VisionBackbone):
         else:
             return EncodedImgBatch(result, None)
 
-    def mlps(self) -> collections.abc.Iterable[torch.nn.Module]:
+    def layers(self) -> collections.abc.Iterable[torch.nn.Module]:
         for block in self.model.transformer.resblocks:
-            yield block.mlp
+            yield block
 
 
 class TimmVit(VisionBackbone):
@@ -162,8 +162,8 @@ class Recorder:
         self._i = 0
 
         self.n_layers = 0
-        for mlp in model.mlps():
-            mlp.register_forward_hook(self)
+        for layer in model.layers():
+            layer.register_forward_hook(self)
             self.n_layers += 1
 
         self.logger = logging.getLogger("recorder")

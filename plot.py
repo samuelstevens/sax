@@ -1,9 +1,8 @@
 import logging
 
 import beartype
-from jaxtyping import jaxtyped, Float, Array, Bool
 import tyro
-
+from jaxtyping import Array, Bool, Float, jaxtyped
 
 log_format = "[%(asctime)s] [%(levelname)s] [%(name)s] %(message)s"
 logging.basicConfig(level=logging.INFO, format=log_format)
@@ -35,6 +34,7 @@ def is_pareto_efficient(points: Float[Array, "n 2"]) -> Bool[Array, " n"]:
 @beartype.beartype
 def plot_exp(ax, name: str, color: str):
     import jax.numpy as jnp
+
     import sax.tracking
 
     exps = list(sax.tracking.load_by_tag(name))
