@@ -1,0 +1,406 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1">
+<meta name="generator" content="pdoc3 0.11.1">
+<title>sax.nn API documentation</title>
+<meta name="description" content="">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/13.0.0/sanitize.min.css" integrity="sha512-y1dtMcuvtTMJc1yPgEqF0ZjQbhnc/bFhyvIyVNb9Zk5mIGtqVaAB1Ttl28su8AvFMOY0EwRbAe+HCLqj6W7/KA==" crossorigin>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/13.0.0/typography.min.css" integrity="sha512-Y1DYSb995BAfxobCkKepB1BqJJTPrOp3zPL74AWFugHHmmdcvO+C48WLrUOlhGMc0QG7AE3f7gmvvcrmX2fDoA==" crossorigin>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/default.min.css" crossorigin>
+<style>:root{--highlight-color:#fe9}.flex{display:flex !important}body{line-height:1.5em}#content{padding:20px}#sidebar{padding:1.5em;overflow:hidden}#sidebar > *:last-child{margin-bottom:2cm}.http-server-breadcrumbs{font-size:130%;margin:0 0 15px 0}#footer{font-size:.75em;padding:5px 30px;border-top:1px solid #ddd;text-align:right}#footer p{margin:0 0 0 1em;display:inline-block}#footer p:last-child{margin-right:30px}h1,h2,h3,h4,h5{font-weight:300}h1{font-size:2.5em;line-height:1.1em}h2{font-size:1.75em;margin:2em 0 .50em 0}h3{font-size:1.4em;margin:1.6em 0 .7em 0}h4{margin:0;font-size:105%}h1:target,h2:target,h3:target,h4:target,h5:target,h6:target{background:var(--highlight-color);padding:.2em 0}a{color:#058;text-decoration:none;transition:color .2s ease-in-out}a:visited{color:#503}a:hover{color:#b62}.title code{font-weight:bold}h2[id^="header-"]{margin-top:2em}.ident{color:#900;font-weight:bold}pre code{font-size:.8em;line-height:1.4em;padding:1em;display:block}code{background:#f3f3f3;font-family:"DejaVu Sans Mono",monospace;padding:1px 4px;overflow-wrap:break-word}h1 code{background:transparent}pre{border-top:1px solid #ccc;border-bottom:1px solid #ccc;margin:1em 0}#http-server-module-list{display:flex;flex-flow:column}#http-server-module-list div{display:flex}#http-server-module-list dt{min-width:10%}#http-server-module-list p{margin-top:0}.toc ul,#index{list-style-type:none;margin:0;padding:0}#index code{background:transparent}#index h3{border-bottom:1px solid #ddd}#index ul{padding:0}#index h4{margin-top:.6em;font-weight:bold}@media (min-width:200ex){#index .two-column{column-count:2}}@media (min-width:300ex){#index .two-column{column-count:3}}dl{margin-bottom:2em}dl dl:last-child{margin-bottom:4em}dd{margin:0 0 1em 3em}#header-classes + dl > dd{margin-bottom:3em}dd dd{margin-left:2em}dd p{margin:10px 0}.name{background:#eee;font-size:.85em;padding:5px 10px;display:inline-block;min-width:40%}.name:hover{background:#e0e0e0}dt:target .name{background:var(--highlight-color)}.name > span:first-child{white-space:nowrap}.name.class > span:nth-child(2){margin-left:.4em}.inherited{color:#999;border-left:5px solid #eee;padding-left:1em}.inheritance em{font-style:normal;font-weight:bold}.desc h2{font-weight:400;font-size:1.25em}.desc h3{font-size:1em}.desc dt code{background:inherit}.source summary,.git-link-div{color:#666;text-align:right;font-weight:400;font-size:.8em;text-transform:uppercase}.source summary > *{white-space:nowrap;cursor:pointer}.git-link{color:inherit;margin-left:1em}.source pre{max-height:500px;overflow:auto;margin:0}.source pre code{font-size:12px;overflow:visible}.hlist{list-style:none}.hlist li{display:inline}.hlist li:after{content:',\2002'}.hlist li:last-child:after{content:none}.hlist .hlist{display:inline;padding-left:1em}img{max-width:100%}td{padding:0 .5em}.admonition{padding:.1em 1em;margin-bottom:1em}.admonition-title{font-weight:bold}.admonition.note,.admonition.info,.admonition.important{background:#aef}.admonition.todo,.admonition.versionadded,.admonition.tip,.admonition.hint{background:#dfd}.admonition.warning,.admonition.versionchanged,.admonition.deprecated{background:#fd4}.admonition.error,.admonition.danger,.admonition.caution{background:lightpink}</style>
+<style media="screen and (min-width: 700px)">@media screen and (min-width:700px){#sidebar{width:30%;height:100vh;overflow:auto;position:sticky;top:0}#content{width:70%;max-width:100ch;padding:3em 4em;border-left:1px solid #ddd}pre code{font-size:1em}.name{font-size:1em}main{display:flex;flex-direction:row-reverse;justify-content:flex-end}.toc ul ul,#index ul ul{padding-left:1em}.toc > ul > li{margin-top:.5em}}</style>
+<style media="print">@media print{#sidebar h1{page-break-before:always}.source{display:none}}@media print{*{background:transparent !important;color:#000 !important;box-shadow:none !important;text-shadow:none !important}a[href]:after{content:" (" attr(href) ")";font-size:90%}a[href][title]:after{content:none}abbr[title]:after{content:" (" attr(title) ")"}.ir a:after,a[href^="javascript:"]:after,a[href^="#"]:after{content:""}pre,blockquote{border:1px solid #999;page-break-inside:avoid}thead{display:table-header-group}tr,img{page-break-inside:avoid}img{max-width:100% !important}@page{margin:0.5cm}p,h2,h3{orphans:3;widows:3}h1,h2,h3,h4,h5,h6{page-break-after:avoid}}</style>
+<script type="text/x-mathjax-config">MathJax.Hub.Config({ tex2jax: { inlineMath: [ ['$','$'], ["\\(","\\)"] ], processEscapes: true } });</script>
+<script async src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS_CHTML" integrity="sha256-kZafAc6mZvK3W3v1pHOcUix30OHQN6pU/NO2oFkqZVw=" crossorigin></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js" integrity="sha512-D9gUyxqja7hBtkWpPWGt9wfbfaMGVt9gnyCvYa+jojwwPHLCzUm5i8rpk7vD7wNee9bA35eYIjobYPaQuKS1MQ==" crossorigin></script>
+<script>window.addEventListener('DOMContentLoaded', () => {
+hljs.configure({languages: ['bash', 'css', 'diff', 'graphql', 'ini', 'javascript', 'json', 'plaintext', 'python', 'python-repl', 'rust', 'shell', 'sql', 'typescript', 'xml', 'yaml']});
+hljs.highlightAll();
+})</script>
+</head>
+<body>
+<main>
+<article id="content">
+<header>
+<h1 class="title">Module <code>sax.nn</code></h1>
+</header>
+<section id="section-intro">
+</section>
+<section>
+</section>
+<section>
+</section>
+<section>
+<h2 class="section-title" id="header-functions">Functions</h2>
+<dl>
+<dt id="sax.nn.heaviside"><code class="name flex">
+<span>def <span class="ident">heaviside</span></span>(<span>x, threshold)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="sax.nn.heaviside_bwd"><code class="name flex">
+<span>def <span class="ident">heaviside_bwd</span></span>(<span>cache, output_grad)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="sax.nn.heaviside_fwd"><code class="name flex">
+<span>def <span class="ident">heaviside_fwd</span></span>(<span>x, threshold)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="sax.nn.jumprelu"><code class="name flex">
+<span>def <span class="ident">jumprelu</span></span>(<span>x: jaxtyping.Float[Array, 'd'], threshold: jaxtyping.Float[Array, 'd'])</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="sax.nn.jumprelu_bwd"><code class="name flex">
+<span>def <span class="ident">jumprelu_bwd</span></span>(<span>cache, output_grad)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="sax.nn.jumprelu_fwd"><code class="name flex">
+<span>def <span class="ident">jumprelu_fwd</span></span>(<span>x: jaxtyping.Float[Array, 'd'], threshold: jaxtyping.Float[Array, 'd'])</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="sax.nn.rectangle"><code class="name flex">
+<span>def <span class="ident">rectangle</span></span>(<span>x: jaxtyping.Float[Array, '...']) ‑> jaxtyping.Float[Array, '...']</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
+</section>
+<section>
+<h2 class="section-title" id="header-classes">Classes</h2>
+<dl>
+<dt id="sax.nn.Loss"><code class="flex name class">
+<span>class <span class="ident">Loss</span></span>
+<span>(</span><span>reconstruction: jaxtyping.Float[Array, ''], sparsity: jaxtyping.Float[Array, ''], l0: jaxtyping.Float[Array, ''], trivial: jaxtyping.Float[Array, ''])</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Loss(reconstruction: jaxtyping.Float[Array, ''], sparsity: jaxtyping.Float[Array, ''], l0: jaxtyping.Float[Array, ''], trivial: jaxtyping.Float[Array, ''])</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@jaxtyped(typechecker=beartype.beartype)
+class Loss(eqx.Module):
+    reconstruction: Float[Array, &#34;&#34;]
+    sparsity: Float[Array, &#34;&#34;]
+    l0: Float[Array, &#34;&#34;]
+    trivial: Float[Array, &#34;&#34;]
+
+    @property
+    def loss(self) -&gt; Float[Array, &#34;&#34;]:
+        return self.reconstruction + self.sparsity
+
+    @property
+    def fvu(self) -&gt; Float[Array, &#34;&#34;]:
+        return 1 - self.loss / self.trivial
+
+    def to_dict(self) -&gt; dict[str, float]:
+        return {
+            &#34;loss&#34;: self.loss.item(),
+            &#34;reconstruction&#34;: self.reconstruction.item(),
+            &#34;sparsity&#34;: self.sparsity.item(),
+            &#34;fvu&#34;: self.fvu.item(),
+            &#34;l0&#34;: self.l0.item(),
+            &#34;trivial&#34;: self.trivial.item(),
+        }</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li>equinox._module.Module</li>
+</ul>
+<h3>Class variables</h3>
+<dl>
+<dt id="sax.nn.Loss.l0"><code class="name">var <span class="ident">l0</span> : jaxtyping.Float[Array, '']</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="sax.nn.Loss.reconstruction"><code class="name">var <span class="ident">reconstruction</span> : jaxtyping.Float[Array, '']</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="sax.nn.Loss.sparsity"><code class="name">var <span class="ident">sparsity</span> : jaxtyping.Float[Array, '']</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="sax.nn.Loss.trivial"><code class="name">var <span class="ident">trivial</span> : jaxtyping.Float[Array, '']</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
+<h3>Instance variables</h3>
+<dl>
+<dt id="sax.nn.Loss.fvu"><code class="name">prop <span class="ident">fvu</span> : jaxtyping.Float[Array, '']</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@property
+def fvu(self) -&gt; Float[Array, &#34;&#34;]:
+    return 1 - self.loss / self.trivial</code></pre>
+</details>
+</dd>
+<dt id="sax.nn.Loss.loss"><code class="name">prop <span class="ident">loss</span> : jaxtyping.Float[Array, '']</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@property
+def loss(self) -&gt; Float[Array, &#34;&#34;]:
+    return self.reconstruction + self.sparsity</code></pre>
+</details>
+</dd>
+</dl>
+<h3>Methods</h3>
+<dl>
+<dt id="sax.nn.Loss.to_dict"><code class="name flex">
+<span>def <span class="ident">to_dict</span></span>(<span>self) ‑> dict[str, float]</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
+</dd>
+<dt id="sax.nn.ReluSAE"><code class="flex name class">
+<span>class <span class="ident">ReluSAE</span></span>
+<span>(</span><span>d_in: int, d_hidden: int, *, pre_enc_bias: bool, key: jax.Array)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>ReluSAE(d_in: int, d_hidden: int, *, pre_enc_bias: bool, key: jax.Array)</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@jaxtyped(typechecker=beartype.beartype)
+class ReluSAE(eqx.Module):
+    w_enc: Float[Array, &#34;d_hidden d_in&#34;]
+    b_enc: Float[Array, &#34; d_hidden&#34;]
+    w_dec: Float[Array, &#34;d_in d_hidden&#34;]
+    b_dec: Float[Array, &#34; d_in&#34;]
+    pre_enc_bias: bool
+
+    def __init__(
+        self, d_in: int, d_hidden: int, *, pre_enc_bias: bool, key: chex.PRNGKey
+    ):
+        init_fn = jax.nn.initializers.he_uniform()
+        w_dec = init_fn(key, (d_in, d_hidden), jnp.float32)
+        # Re-scale each latent vector to have unit norm. w_dec is [n_features, d_model], so we want to take the norm along axis=1 (0-indexed).
+        self.w_dec = w_dec / jnp.linalg.norm(w_dec, axis=1, keepdims=True)
+
+        # Initialize w_enc to transpose of w_dec, but do not tie.
+        self.w_enc = self.w_dec.T
+
+        # Initialize biases to 0.
+        self.b_enc = jnp.zeros((d_hidden,))
+        self.b_dec = jnp.zeros((d_in,))
+
+        self.pre_enc_bias = pre_enc_bias
+
+    def __call__(
+        self, x: Float[Array, &#34; d_in&#34;]
+    ) -&gt; tuple[Float[Array, &#34; d_in&#34;], Float[Array, &#34; d_hidden&#34;]]:
+        if self.pre_enc_bias:
+            x = x - self.b_dec
+        x = self.w_enc @ x + self.b_enc
+        f_x = jax.nn.relu(x)
+        x_hat = self.w_dec @ f_x + self.b_dec
+        return x_hat, f_x
+
+    @staticmethod
+    def loss(
+        model: typing.Self,
+        x: Float[Array, &#34;batch d_in&#34;],
+        sparsity_coeff: Float[Array, &#34;&#34;],
+    ) -&gt; Loss:
+        x_hat, f_x = jax.vmap(model)(x)
+
+        reconstruct_err = x - x_hat
+        reconstruct_loss = jnp.sum(reconstruct_err**2, axis=-1).mean()
+
+        l1 = jnp.linalg.norm(f_x, ord=1, axis=-1)
+        sparsity_loss = (sparsity_coeff * l1).mean()
+
+        # Measure l0 sparsity as auxilary metric.
+        l0 = jnp.sum(f_x &gt; 0, axis=1).mean()
+
+        # Measure trivial loss, the loss obtained by choosing the batch mean.
+        trivial_err = x - x.mean(axis=0)
+        trivial_loss = (trivial_err**2).sum(axis=-1).mean()
+
+        return Loss(reconstruct_loss, sparsity_loss, l0, trivial_loss)</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li>equinox._module.Module</li>
+</ul>
+<h3>Subclasses</h3>
+<ul class="hlist">
+<li><a title="sax.nn.ReparamInvariantReluSAE" href="#sax.nn.ReparamInvariantReluSAE">ReparamInvariantReluSAE</a></li>
+</ul>
+<h3>Class variables</h3>
+<dl>
+<dt id="sax.nn.ReluSAE.b_dec"><code class="name">var <span class="ident">b_dec</span> : jaxtyping.Float[Array, 'd_in']</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="sax.nn.ReluSAE.b_enc"><code class="name">var <span class="ident">b_enc</span> : jaxtyping.Float[Array, 'd_hidden']</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="sax.nn.ReluSAE.pre_enc_bias"><code class="name">var <span class="ident">pre_enc_bias</span> : bool</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="sax.nn.ReluSAE.w_dec"><code class="name">var <span class="ident">w_dec</span> : jaxtyping.Float[Array, 'd_in d_hidden']</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="sax.nn.ReluSAE.w_enc"><code class="name">var <span class="ident">w_enc</span> : jaxtyping.Float[Array, 'd_hidden d_in']</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
+<h3>Static methods</h3>
+<dl>
+<dt id="sax.nn.ReluSAE.loss"><code class="name flex">
+<span>def <span class="ident">loss</span></span>(<span>model: Self, x: jaxtyping.Float[Array, 'batch d_in'], sparsity_coeff: jaxtyping.Float[Array, '']) ‑> <a title="sax.nn.Loss" href="#sax.nn.Loss">Loss</a></span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
+</dd>
+<dt id="sax.nn.ReparamInvariantReluSAE"><code class="flex name class">
+<span>class <span class="ident">ReparamInvariantReluSAE</span></span>
+<span>(</span><span>d_in: int, d_hidden: int, *, pre_enc_bias: bool, key: jax.Array)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>ReparamInvariantReluSAE(d_in: int, d_hidden: int, *, pre_enc_bias: bool, key: jax.Array)</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@jaxtyped(typechecker=beartype.beartype)
+class ReparamInvariantReluSAE(ReluSAE):
+    @staticmethod
+    def loss(
+        model: typing.Self,
+        x: Float[Array, &#34;batch d_in&#34;],
+        sparsity_coeff: Float[Array, &#34;&#34;],
+        mean_act: Float[Array, &#34; d_in&#34;] | None = None,
+    ) -&gt; Loss:
+        x_hat, f_x = jax.vmap(model)(x)
+
+        reconstruct_err = x - x_hat
+        reconstruct_loss = jnp.sum(reconstruct_err**2, axis=-1).mean()
+
+        # Reparameterization-invariant L1
+        # sum_^M f_x_i * ||d_i||2
+        ri_l1 = f_x @ jnp.linalg.norm(model.w_dec, axis=0)
+        sparsity_loss = (sparsity_coeff * ri_l1).mean()
+
+        # Measure l0 sparsity as auxilary metric.
+        l0 = jnp.sum(f_x &gt; 0, axis=1).mean()
+
+        # Measure trivial loss, the loss obtained by choosing the batch mean.
+        trivial_err = x - x.mean(axis=0)
+        trivial_loss = (trivial_err**2).sum(axis=-1).mean()
+
+        return Loss(reconstruct_loss, sparsity_loss, l0, trivial_loss)</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="sax.nn.ReluSAE" href="#sax.nn.ReluSAE">ReluSAE</a></li>
+<li>equinox._module.Module</li>
+</ul>
+<h3>Static methods</h3>
+<dl>
+<dt id="sax.nn.ReparamInvariantReluSAE.loss"><code class="name flex">
+<span>def <span class="ident">loss</span></span>(<span>model: Self, x: jaxtyping.Float[Array, 'batch d_in'], sparsity_coeff: jaxtyping.Float[Array, ''], mean_act: jaxtyping.Float[Array, 'd_in'] | None = None) ‑> <a title="sax.nn.Loss" href="#sax.nn.Loss">Loss</a></span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
+</dd>
+</dl>
+</section>
+</article>
+<nav id="sidebar">
+<div class="toc">
+<ul></ul>
+</div>
+<ul id="index">
+<li><h3>Super-module</h3>
+<ul>
+<li><code><a title="sax" href="index.html">sax</a></code></li>
+</ul>
+</li>
+<li><h3><a href="#header-functions">Functions</a></h3>
+<ul class="two-column">
+<li><code><a title="sax.nn.heaviside" href="#sax.nn.heaviside">heaviside</a></code></li>
+<li><code><a title="sax.nn.heaviside_bwd" href="#sax.nn.heaviside_bwd">heaviside_bwd</a></code></li>
+<li><code><a title="sax.nn.heaviside_fwd" href="#sax.nn.heaviside_fwd">heaviside_fwd</a></code></li>
+<li><code><a title="sax.nn.jumprelu" href="#sax.nn.jumprelu">jumprelu</a></code></li>
+<li><code><a title="sax.nn.jumprelu_bwd" href="#sax.nn.jumprelu_bwd">jumprelu_bwd</a></code></li>
+<li><code><a title="sax.nn.jumprelu_fwd" href="#sax.nn.jumprelu_fwd">jumprelu_fwd</a></code></li>
+<li><code><a title="sax.nn.rectangle" href="#sax.nn.rectangle">rectangle</a></code></li>
+</ul>
+</li>
+<li><h3><a href="#header-classes">Classes</a></h3>
+<ul>
+<li>
+<h4><code><a title="sax.nn.Loss" href="#sax.nn.Loss">Loss</a></code></h4>
+<ul class="two-column">
+<li><code><a title="sax.nn.Loss.fvu" href="#sax.nn.Loss.fvu">fvu</a></code></li>
+<li><code><a title="sax.nn.Loss.l0" href="#sax.nn.Loss.l0">l0</a></code></li>
+<li><code><a title="sax.nn.Loss.loss" href="#sax.nn.Loss.loss">loss</a></code></li>
+<li><code><a title="sax.nn.Loss.reconstruction" href="#sax.nn.Loss.reconstruction">reconstruction</a></code></li>
+<li><code><a title="sax.nn.Loss.sparsity" href="#sax.nn.Loss.sparsity">sparsity</a></code></li>
+<li><code><a title="sax.nn.Loss.to_dict" href="#sax.nn.Loss.to_dict">to_dict</a></code></li>
+<li><code><a title="sax.nn.Loss.trivial" href="#sax.nn.Loss.trivial">trivial</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="sax.nn.ReluSAE" href="#sax.nn.ReluSAE">ReluSAE</a></code></h4>
+<ul class="two-column">
+<li><code><a title="sax.nn.ReluSAE.b_dec" href="#sax.nn.ReluSAE.b_dec">b_dec</a></code></li>
+<li><code><a title="sax.nn.ReluSAE.b_enc" href="#sax.nn.ReluSAE.b_enc">b_enc</a></code></li>
+<li><code><a title="sax.nn.ReluSAE.loss" href="#sax.nn.ReluSAE.loss">loss</a></code></li>
+<li><code><a title="sax.nn.ReluSAE.pre_enc_bias" href="#sax.nn.ReluSAE.pre_enc_bias">pre_enc_bias</a></code></li>
+<li><code><a title="sax.nn.ReluSAE.w_dec" href="#sax.nn.ReluSAE.w_dec">w_dec</a></code></li>
+<li><code><a title="sax.nn.ReluSAE.w_enc" href="#sax.nn.ReluSAE.w_enc">w_enc</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="sax.nn.ReparamInvariantReluSAE" href="#sax.nn.ReparamInvariantReluSAE">ReparamInvariantReluSAE</a></code></h4>
+<ul class="">
+<li><code><a title="sax.nn.ReparamInvariantReluSAE.loss" href="#sax.nn.ReparamInvariantReluSAE.loss">loss</a></code></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</nav>
+</main>
+<footer id="footer">
+<p>Generated by <a href="https://pdoc3.github.io/pdoc" title="pdoc: Python API documentation generator"><cite>pdoc</cite> 0.11.1</a>.</p>
+</footer>
+</body>
+</html>

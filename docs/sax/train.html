@@ -1,0 +1,328 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1">
+<meta name="generator" content="pdoc3 0.11.1">
+<title>sax.train API documentation</title>
+<meta name="description" content="">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/13.0.0/sanitize.min.css" integrity="sha512-y1dtMcuvtTMJc1yPgEqF0ZjQbhnc/bFhyvIyVNb9Zk5mIGtqVaAB1Ttl28su8AvFMOY0EwRbAe+HCLqj6W7/KA==" crossorigin>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/13.0.0/typography.min.css" integrity="sha512-Y1DYSb995BAfxobCkKepB1BqJJTPrOp3zPL74AWFugHHmmdcvO+C48WLrUOlhGMc0QG7AE3f7gmvvcrmX2fDoA==" crossorigin>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/default.min.css" crossorigin>
+<style>:root{--highlight-color:#fe9}.flex{display:flex !important}body{line-height:1.5em}#content{padding:20px}#sidebar{padding:1.5em;overflow:hidden}#sidebar > *:last-child{margin-bottom:2cm}.http-server-breadcrumbs{font-size:130%;margin:0 0 15px 0}#footer{font-size:.75em;padding:5px 30px;border-top:1px solid #ddd;text-align:right}#footer p{margin:0 0 0 1em;display:inline-block}#footer p:last-child{margin-right:30px}h1,h2,h3,h4,h5{font-weight:300}h1{font-size:2.5em;line-height:1.1em}h2{font-size:1.75em;margin:2em 0 .50em 0}h3{font-size:1.4em;margin:1.6em 0 .7em 0}h4{margin:0;font-size:105%}h1:target,h2:target,h3:target,h4:target,h5:target,h6:target{background:var(--highlight-color);padding:.2em 0}a{color:#058;text-decoration:none;transition:color .2s ease-in-out}a:visited{color:#503}a:hover{color:#b62}.title code{font-weight:bold}h2[id^="header-"]{margin-top:2em}.ident{color:#900;font-weight:bold}pre code{font-size:.8em;line-height:1.4em;padding:1em;display:block}code{background:#f3f3f3;font-family:"DejaVu Sans Mono",monospace;padding:1px 4px;overflow-wrap:break-word}h1 code{background:transparent}pre{border-top:1px solid #ccc;border-bottom:1px solid #ccc;margin:1em 0}#http-server-module-list{display:flex;flex-flow:column}#http-server-module-list div{display:flex}#http-server-module-list dt{min-width:10%}#http-server-module-list p{margin-top:0}.toc ul,#index{list-style-type:none;margin:0;padding:0}#index code{background:transparent}#index h3{border-bottom:1px solid #ddd}#index ul{padding:0}#index h4{margin-top:.6em;font-weight:bold}@media (min-width:200ex){#index .two-column{column-count:2}}@media (min-width:300ex){#index .two-column{column-count:3}}dl{margin-bottom:2em}dl dl:last-child{margin-bottom:4em}dd{margin:0 0 1em 3em}#header-classes + dl > dd{margin-bottom:3em}dd dd{margin-left:2em}dd p{margin:10px 0}.name{background:#eee;font-size:.85em;padding:5px 10px;display:inline-block;min-width:40%}.name:hover{background:#e0e0e0}dt:target .name{background:var(--highlight-color)}.name > span:first-child{white-space:nowrap}.name.class > span:nth-child(2){margin-left:.4em}.inherited{color:#999;border-left:5px solid #eee;padding-left:1em}.inheritance em{font-style:normal;font-weight:bold}.desc h2{font-weight:400;font-size:1.25em}.desc h3{font-size:1em}.desc dt code{background:inherit}.source summary,.git-link-div{color:#666;text-align:right;font-weight:400;font-size:.8em;text-transform:uppercase}.source summary > *{white-space:nowrap;cursor:pointer}.git-link{color:inherit;margin-left:1em}.source pre{max-height:500px;overflow:auto;margin:0}.source pre code{font-size:12px;overflow:visible}.hlist{list-style:none}.hlist li{display:inline}.hlist li:after{content:',\2002'}.hlist li:last-child:after{content:none}.hlist .hlist{display:inline;padding-left:1em}img{max-width:100%}td{padding:0 .5em}.admonition{padding:.1em 1em;margin-bottom:1em}.admonition-title{font-weight:bold}.admonition.note,.admonition.info,.admonition.important{background:#aef}.admonition.todo,.admonition.versionadded,.admonition.tip,.admonition.hint{background:#dfd}.admonition.warning,.admonition.versionchanged,.admonition.deprecated{background:#fd4}.admonition.error,.admonition.danger,.admonition.caution{background:lightpink}</style>
+<style media="screen and (min-width: 700px)">@media screen and (min-width:700px){#sidebar{width:30%;height:100vh;overflow:auto;position:sticky;top:0}#content{width:70%;max-width:100ch;padding:3em 4em;border-left:1px solid #ddd}pre code{font-size:1em}.name{font-size:1em}main{display:flex;flex-direction:row-reverse;justify-content:flex-end}.toc ul ul,#index ul ul{padding-left:1em}.toc > ul > li{margin-top:.5em}}</style>
+<style media="print">@media print{#sidebar h1{page-break-before:always}.source{display:none}}@media print{*{background:transparent !important;color:#000 !important;box-shadow:none !important;text-shadow:none !important}a[href]:after{content:" (" attr(href) ")";font-size:90%}a[href][title]:after{content:none}abbr[title]:after{content:" (" attr(title) ")"}.ir a:after,a[href^="javascript:"]:after,a[href^="#"]:after{content:""}pre,blockquote{border:1px solid #999;page-break-inside:avoid}thead{display:table-header-group}tr,img{page-break-inside:avoid}img{max-width:100% !important}@page{margin:0.5cm}p,h2,h3{orphans:3;widows:3}h1,h2,h3,h4,h5,h6{page-break-after:avoid}}</style>
+<script type="text/x-mathjax-config">MathJax.Hub.Config({ tex2jax: { inlineMath: [ ['$','$'], ["\\(","\\)"] ], processEscapes: true } });</script>
+<script async src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS_CHTML" integrity="sha256-kZafAc6mZvK3W3v1pHOcUix30OHQN6pU/NO2oFkqZVw=" crossorigin></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js" integrity="sha512-D9gUyxqja7hBtkWpPWGt9wfbfaMGVt9gnyCvYa+jojwwPHLCzUm5i8rpk7vD7wNee9bA35eYIjobYPaQuKS1MQ==" crossorigin></script>
+<script>window.addEventListener('DOMContentLoaded', () => {
+hljs.configure({languages: ['bash', 'css', 'diff', 'graphql', 'ini', 'javascript', 'json', 'plaintext', 'python', 'python-repl', 'rust', 'shell', 'sql', 'typescript', 'xml', 'yaml']});
+hljs.highlightAll();
+})</script>
+</head>
+<body>
+<main>
+<article id="content">
+<header>
+<h1 class="title">Module <code>sax.train</code></h1>
+</header>
+<section id="section-intro">
+</section>
+<section>
+</section>
+<section>
+</section>
+<section>
+<h2 class="section-title" id="header-functions">Functions</h2>
+<dl>
+<dt id="sax.train.evaluate"><code class="name flex">
+<span>def <span class="ident">evaluate</span></span>(<span>args: <a title="sax.train.Args" href="#sax.train.Args">Args</a>, sae: equinox._module.Module, key: jax.Array) ‑> dict[str, float]</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Evaluates a sparse autoencoder on the validation datset, computing mean L2 loss, mean L0 sparsity, and the trivial validation loss using the mean batch activation.</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>args</code></strong></dt>
+<dd>run configuration.</dd>
+<dt><strong><code>sae</code></strong></dt>
+<dd>the sparse autoencoder under evaluation.</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<p>A dictionary of metrics.</p></div>
+</dd>
+<dt id="sax.train.get_lr_schedule"><code class="name flex">
+<span>def <span class="ident">get_lr_schedule</span></span>(<span>args: <a title="sax.train.Args" href="#sax.train.Args">Args</a>)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="sax.train.make_dataloader"><code class="name flex">
+<span>def <span class="ident">make_dataloader</span></span>(<span>args: <a title="sax.train.Args" href="#sax.train.Args">Args</a>, key: jax.Array, *, is_train: bool) ‑> collections.abc.Iterable[jaxtyping.Float[Array, 'batch d_model']]</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="sax.train.normalize"><code class="name flex">
+<span>def <span class="ident">normalize</span></span>(<span>kind: Literal[None, 'example', 'batch'], batch: jaxtyping.Float[Array, 'batch d_model']) ‑> jaxtyping.Float[Array, 'batch d_model']</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="sax.train.step"><code class="name flex">
+<span>def <span class="ident">step</span></span>(<span>model: equinox._module.Module, optim: optax._src.base.GradientTransformation | optax.transforms._accumulation.MultiSteps, state: Union[jax.Array, numpy.ndarray, numpy.bool, numpy.number, Iterable[ForwardRef('ArrayTree')], Mapping[Any, ForwardRef('ArrayTree')], optax.transforms._accumulation.MultiStepsState], batch: jaxtyping.Float[Array, 'batch d_model'], sparsity_coeff: jaxtyping.Float[Array, ''], data_norm: Literal[None, 'example', 'batch'])</span>
+</code></dt>
+<dd>
+<div class="desc"><h2 id="returns">Returns</h2>
+<p>A tuple of updated model, optimizer state, loss (with auxilary information), gradient norm (before clipping)</p></div>
+</dd>
+<dt id="sax.train.train"><code class="name flex">
+<span>def <span class="ident">train</span></span>(<span>args: <a title="sax.train.Args" href="#sax.train.Args">Args</a>) ‑> str</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
+</section>
+<section>
+<h2 class="section-title" id="header-classes">Classes</h2>
+<dl>
+<dt id="sax.train.Args"><code class="flex name class">
+<span>class <span class="ident">Args</span></span>
+<span>(</span><span>train_activations: str = 'activations-train.bin', val_activations: str = 'activations-val.bin', d_model: int = 768, n_layers: int = 12, n_train: int = 1281167, n_val: int = 50000, data_norm: Literal[None, 'example', 'batch'] = None, layers: list[int] = &lt;factory&gt;, expansion_factor: int = 64, sparsity_coeff: float = 0.001, batch_size: int = 4096, learning_rate: float = 7e-05, beta1: float = 0.9, beta2: float = 0.999, eps: float = 1e-08, lr_schedule: Literal[None, 'warmup', 'warmup+cosine-decay'] = 'warmup', n_lr_warmup: int = 300, n_sparsity_warmup: int = 1000, grad_clip: float = 0.0, n_epochs: int = 4, pre_enc_bias: bool = True, seed: int = 42, log_every: int = 100, track: bool = True, ckpt_dir: str = './checkpoints', tags: list[str] = &lt;factory&gt;)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Args(train_activations: str = 'activations-train.bin', val_activations: str = 'activations-val.bin', d_model: int = 768, n_layers: int = 12, n_train: int = 1281167, n_val: int = 50000, data_norm: Literal[None, 'example', 'batch'] = None, layers: list[int] = <factory>, expansion_factor: int = 64, sparsity_coeff: float = 0.001, batch_size: int = 4096, learning_rate: float = 7e-05, beta1: float = 0.9, beta2: float = 0.999, eps: float = 1e-08, lr_schedule: Literal[None, 'warmup', 'warmup+cosine-decay'] = 'warmup', n_lr_warmup: int = 300, n_sparsity_warmup: int = 1000, grad_clip: float = 0.0, n_epochs: int = 4, pre_enc_bias: bool = True, seed: int = 42, log_every: int = 100, track: bool = True, ckpt_dir: str = './checkpoints', tags: list[str] = <factory>)</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@beartype.beartype
+@dataclasses.dataclass(frozen=True)
+class Args:
+    train_activations: str = &#34;activations-train.bin&#34;
+    &#34;&#34;&#34;training activations.&#34;&#34;&#34;
+    val_activations: str = &#34;activations-val.bin&#34;
+    &#34;&#34;&#34;validation activations.&#34;&#34;&#34;
+    d_model: int = 768
+    &#34;&#34;&#34;model dimension.&#34;&#34;&#34;
+    n_layers: int = 12
+    &#34;&#34;&#34;number of model layers.&#34;&#34;&#34;
+    n_train: int = 1281167
+    &#34;&#34;&#34;number of train activations&#34;&#34;&#34;
+    n_val: int = 50_000
+    &#34;&#34;&#34;number of val activations&#34;&#34;&#34;
+    data_norm: DataNorm = None
+    &#34;&#34;&#34;how to normalize activations before auto-encoding.&#34;&#34;&#34;
+    layers: list[int] = dataclasses.field(default_factory=list)
+    &#34;&#34;&#34;which layers to use for training. An empty list means all of them.&#34;&#34;&#34;
+
+    expansion_factor: int = 64
+    &#34;&#34;&#34;how many times larger the SAE&#39;s hidden layer should be.&#34;&#34;&#34;
+    sparsity_coeff: float = 1e-3
+    &#34;&#34;&#34;how much to upweight loss_sparsity.&#34;&#34;&#34;
+    batch_size: int = 4096
+    &#34;&#34;&#34;batch size.&#34;&#34;&#34;
+    learning_rate: float = 7e-5
+    &#34;&#34;&#34;peak learning rate.&#34;&#34;&#34;
+    beta1: float = 0.9
+    beta2: float = 0.999
+    eps: float = 1e-8
+    &#34;&#34;&#34;Adam&#39;s epsilon term.&#34;&#34;&#34;
+    lr_schedule: Schedule = &#34;warmup&#34;
+    &#34;&#34;&#34;what kind of learning rate schedule to use.&#34;&#34;&#34;
+    n_lr_warmup: int = 300
+    &#34;&#34;&#34;number of learning rate warmup steps.&#34;&#34;&#34;
+    n_sparsity_warmup: int = 1_000
+    &#34;&#34;&#34;number of sparsity coefficient warmup steps.&#34;&#34;&#34;
+    grad_clip: float = 0.0
+    &#34;&#34;&#34;maximum gradient norm. 0.0 indicates no maximum.&#34;&#34;&#34;
+    n_epochs: int = 4
+    &#34;&#34;&#34;number of epochs.&#34;&#34;&#34;
+    pre_enc_bias: bool = True
+    &#34;&#34;&#34;whether to subtract b_dec before sae.&#34;&#34;&#34;
+
+    seed: int = 42
+    &#34;&#34;&#34;random seed.&#34;&#34;&#34;
+    log_every: int = 100
+    &#34;&#34;&#34;how often to log metrics.&#34;&#34;&#34;
+    track: bool = True
+    &#34;&#34;&#34;whether to track metrics using Aim.&#34;&#34;&#34;
+    ckpt_dir: str = os.path.join(&#34;.&#34;, &#34;checkpoints&#34;)
+    &#34;&#34;&#34;where to store model checkpoints.&#34;&#34;&#34;
+    tags: list[str] = dataclasses.field(default_factory=list)
+    &#34;&#34;&#34;any tags for this specific run.&#34;&#34;&#34;</code></pre>
+</details>
+<h3>Class variables</h3>
+<dl>
+<dt id="sax.train.Args.batch_size"><code class="name">var <span class="ident">batch_size</span> : int</code></dt>
+<dd>
+<div class="desc"><p>batch size.</p></div>
+</dd>
+<dt id="sax.train.Args.beta1"><code class="name">var <span class="ident">beta1</span> : float</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="sax.train.Args.beta2"><code class="name">var <span class="ident">beta2</span> : float</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="sax.train.Args.ckpt_dir"><code class="name">var <span class="ident">ckpt_dir</span> : str</code></dt>
+<dd>
+<div class="desc"><p>where to store model checkpoints.</p></div>
+</dd>
+<dt id="sax.train.Args.d_model"><code class="name">var <span class="ident">d_model</span> : int</code></dt>
+<dd>
+<div class="desc"><p>model dimension.</p></div>
+</dd>
+<dt id="sax.train.Args.data_norm"><code class="name">var <span class="ident">data_norm</span> : Literal[None, 'example', 'batch']</code></dt>
+<dd>
+<div class="desc"><p>how to normalize activations before auto-encoding.</p></div>
+</dd>
+<dt id="sax.train.Args.eps"><code class="name">var <span class="ident">eps</span> : float</code></dt>
+<dd>
+<div class="desc"><p>Adam's epsilon term.</p></div>
+</dd>
+<dt id="sax.train.Args.expansion_factor"><code class="name">var <span class="ident">expansion_factor</span> : int</code></dt>
+<dd>
+<div class="desc"><p>how many times larger the SAE's hidden layer should be.</p></div>
+</dd>
+<dt id="sax.train.Args.grad_clip"><code class="name">var <span class="ident">grad_clip</span> : float</code></dt>
+<dd>
+<div class="desc"><p>maximum gradient norm. 0.0 indicates no maximum.</p></div>
+</dd>
+<dt id="sax.train.Args.layers"><code class="name">var <span class="ident">layers</span> : list[int]</code></dt>
+<dd>
+<div class="desc"><p>which layers to use for training. An empty list means all of them.</p></div>
+</dd>
+<dt id="sax.train.Args.learning_rate"><code class="name">var <span class="ident">learning_rate</span> : float</code></dt>
+<dd>
+<div class="desc"><p>peak learning rate.</p></div>
+</dd>
+<dt id="sax.train.Args.log_every"><code class="name">var <span class="ident">log_every</span> : int</code></dt>
+<dd>
+<div class="desc"><p>how often to log metrics.</p></div>
+</dd>
+<dt id="sax.train.Args.lr_schedule"><code class="name">var <span class="ident">lr_schedule</span> : Literal[None, 'warmup', 'warmup+cosine-decay']</code></dt>
+<dd>
+<div class="desc"><p>what kind of learning rate schedule to use.</p></div>
+</dd>
+<dt id="sax.train.Args.n_epochs"><code class="name">var <span class="ident">n_epochs</span> : int</code></dt>
+<dd>
+<div class="desc"><p>number of epochs.</p></div>
+</dd>
+<dt id="sax.train.Args.n_layers"><code class="name">var <span class="ident">n_layers</span> : int</code></dt>
+<dd>
+<div class="desc"><p>number of model layers.</p></div>
+</dd>
+<dt id="sax.train.Args.n_lr_warmup"><code class="name">var <span class="ident">n_lr_warmup</span> : int</code></dt>
+<dd>
+<div class="desc"><p>number of learning rate warmup steps.</p></div>
+</dd>
+<dt id="sax.train.Args.n_sparsity_warmup"><code class="name">var <span class="ident">n_sparsity_warmup</span> : int</code></dt>
+<dd>
+<div class="desc"><p>number of sparsity coefficient warmup steps.</p></div>
+</dd>
+<dt id="sax.train.Args.n_train"><code class="name">var <span class="ident">n_train</span> : int</code></dt>
+<dd>
+<div class="desc"><p>number of train activations</p></div>
+</dd>
+<dt id="sax.train.Args.n_val"><code class="name">var <span class="ident">n_val</span> : int</code></dt>
+<dd>
+<div class="desc"><p>number of val activations</p></div>
+</dd>
+<dt id="sax.train.Args.pre_enc_bias"><code class="name">var <span class="ident">pre_enc_bias</span> : bool</code></dt>
+<dd>
+<div class="desc"><p>whether to subtract b_dec before sae.</p></div>
+</dd>
+<dt id="sax.train.Args.seed"><code class="name">var <span class="ident">seed</span> : int</code></dt>
+<dd>
+<div class="desc"><p>random seed.</p></div>
+</dd>
+<dt id="sax.train.Args.sparsity_coeff"><code class="name">var <span class="ident">sparsity_coeff</span> : float</code></dt>
+<dd>
+<div class="desc"><p>how much to upweight loss_sparsity.</p></div>
+</dd>
+<dt id="sax.train.Args.tags"><code class="name">var <span class="ident">tags</span> : list[str]</code></dt>
+<dd>
+<div class="desc"><p>any tags for this specific run.</p></div>
+</dd>
+<dt id="sax.train.Args.track"><code class="name">var <span class="ident">track</span> : bool</code></dt>
+<dd>
+<div class="desc"><p>whether to track metrics using Aim.</p></div>
+</dd>
+<dt id="sax.train.Args.train_activations"><code class="name">var <span class="ident">train_activations</span> : str</code></dt>
+<dd>
+<div class="desc"><p>training activations.</p></div>
+</dd>
+<dt id="sax.train.Args.val_activations"><code class="name">var <span class="ident">val_activations</span> : str</code></dt>
+<dd>
+<div class="desc"><p>validation activations.</p></div>
+</dd>
+</dl>
+</dd>
+</dl>
+</section>
+</article>
+<nav id="sidebar">
+<div class="toc">
+<ul></ul>
+</div>
+<ul id="index">
+<li><h3>Super-module</h3>
+<ul>
+<li><code><a title="sax" href="index.html">sax</a></code></li>
+</ul>
+</li>
+<li><h3><a href="#header-functions">Functions</a></h3>
+<ul class="two-column">
+<li><code><a title="sax.train.evaluate" href="#sax.train.evaluate">evaluate</a></code></li>
+<li><code><a title="sax.train.get_lr_schedule" href="#sax.train.get_lr_schedule">get_lr_schedule</a></code></li>
+<li><code><a title="sax.train.make_dataloader" href="#sax.train.make_dataloader">make_dataloader</a></code></li>
+<li><code><a title="sax.train.normalize" href="#sax.train.normalize">normalize</a></code></li>
+<li><code><a title="sax.train.step" href="#sax.train.step">step</a></code></li>
+<li><code><a title="sax.train.train" href="#sax.train.train">train</a></code></li>
+</ul>
+</li>
+<li><h3><a href="#header-classes">Classes</a></h3>
+<ul>
+<li>
+<h4><code><a title="sax.train.Args" href="#sax.train.Args">Args</a></code></h4>
+<ul class="two-column">
+<li><code><a title="sax.train.Args.batch_size" href="#sax.train.Args.batch_size">batch_size</a></code></li>
+<li><code><a title="sax.train.Args.beta1" href="#sax.train.Args.beta1">beta1</a></code></li>
+<li><code><a title="sax.train.Args.beta2" href="#sax.train.Args.beta2">beta2</a></code></li>
+<li><code><a title="sax.train.Args.ckpt_dir" href="#sax.train.Args.ckpt_dir">ckpt_dir</a></code></li>
+<li><code><a title="sax.train.Args.d_model" href="#sax.train.Args.d_model">d_model</a></code></li>
+<li><code><a title="sax.train.Args.data_norm" href="#sax.train.Args.data_norm">data_norm</a></code></li>
+<li><code><a title="sax.train.Args.eps" href="#sax.train.Args.eps">eps</a></code></li>
+<li><code><a title="sax.train.Args.expansion_factor" href="#sax.train.Args.expansion_factor">expansion_factor</a></code></li>
+<li><code><a title="sax.train.Args.grad_clip" href="#sax.train.Args.grad_clip">grad_clip</a></code></li>
+<li><code><a title="sax.train.Args.layers" href="#sax.train.Args.layers">layers</a></code></li>
+<li><code><a title="sax.train.Args.learning_rate" href="#sax.train.Args.learning_rate">learning_rate</a></code></li>
+<li><code><a title="sax.train.Args.log_every" href="#sax.train.Args.log_every">log_every</a></code></li>
+<li><code><a title="sax.train.Args.lr_schedule" href="#sax.train.Args.lr_schedule">lr_schedule</a></code></li>
+<li><code><a title="sax.train.Args.n_epochs" href="#sax.train.Args.n_epochs">n_epochs</a></code></li>
+<li><code><a title="sax.train.Args.n_layers" href="#sax.train.Args.n_layers">n_layers</a></code></li>
+<li><code><a title="sax.train.Args.n_lr_warmup" href="#sax.train.Args.n_lr_warmup">n_lr_warmup</a></code></li>
+<li><code><a title="sax.train.Args.n_sparsity_warmup" href="#sax.train.Args.n_sparsity_warmup">n_sparsity_warmup</a></code></li>
+<li><code><a title="sax.train.Args.n_train" href="#sax.train.Args.n_train">n_train</a></code></li>
+<li><code><a title="sax.train.Args.n_val" href="#sax.train.Args.n_val">n_val</a></code></li>
+<li><code><a title="sax.train.Args.pre_enc_bias" href="#sax.train.Args.pre_enc_bias">pre_enc_bias</a></code></li>
+<li><code><a title="sax.train.Args.seed" href="#sax.train.Args.seed">seed</a></code></li>
+<li><code><a title="sax.train.Args.sparsity_coeff" href="#sax.train.Args.sparsity_coeff">sparsity_coeff</a></code></li>
+<li><code><a title="sax.train.Args.tags" href="#sax.train.Args.tags">tags</a></code></li>
+<li><code><a title="sax.train.Args.track" href="#sax.train.Args.track">track</a></code></li>
+<li><code><a title="sax.train.Args.train_activations" href="#sax.train.Args.train_activations">train_activations</a></code></li>
+<li><code><a title="sax.train.Args.val_activations" href="#sax.train.Args.val_activations">val_activations</a></code></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</nav>
+</main>
+<footer id="footer">
+<p>Generated by <a href="https://pdoc3.github.io/pdoc" title="pdoc: Python API documentation generator"><cite>pdoc</cite> 0.11.1</a>.</p>
+</footer>
+</body>
+</html>

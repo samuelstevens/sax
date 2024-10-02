@@ -1,0 +1,439 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1">
+<meta name="generator" content="pdoc3 0.11.1">
+<title>get_activations API documentation</title>
+<meta name="description" content="Gets activations for a ViT&#39;s image representation and stores them as floating-point arrays on disk so they can be used as training data for SAEs …">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/13.0.0/sanitize.min.css" integrity="sha512-y1dtMcuvtTMJc1yPgEqF0ZjQbhnc/bFhyvIyVNb9Zk5mIGtqVaAB1Ttl28su8AvFMOY0EwRbAe+HCLqj6W7/KA==" crossorigin>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/13.0.0/typography.min.css" integrity="sha512-Y1DYSb995BAfxobCkKepB1BqJJTPrOp3zPL74AWFugHHmmdcvO+C48WLrUOlhGMc0QG7AE3f7gmvvcrmX2fDoA==" crossorigin>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/default.min.css" crossorigin>
+<style>:root{--highlight-color:#fe9}.flex{display:flex !important}body{line-height:1.5em}#content{padding:20px}#sidebar{padding:1.5em;overflow:hidden}#sidebar > *:last-child{margin-bottom:2cm}.http-server-breadcrumbs{font-size:130%;margin:0 0 15px 0}#footer{font-size:.75em;padding:5px 30px;border-top:1px solid #ddd;text-align:right}#footer p{margin:0 0 0 1em;display:inline-block}#footer p:last-child{margin-right:30px}h1,h2,h3,h4,h5{font-weight:300}h1{font-size:2.5em;line-height:1.1em}h2{font-size:1.75em;margin:2em 0 .50em 0}h3{font-size:1.4em;margin:1.6em 0 .7em 0}h4{margin:0;font-size:105%}h1:target,h2:target,h3:target,h4:target,h5:target,h6:target{background:var(--highlight-color);padding:.2em 0}a{color:#058;text-decoration:none;transition:color .2s ease-in-out}a:visited{color:#503}a:hover{color:#b62}.title code{font-weight:bold}h2[id^="header-"]{margin-top:2em}.ident{color:#900;font-weight:bold}pre code{font-size:.8em;line-height:1.4em;padding:1em;display:block}code{background:#f3f3f3;font-family:"DejaVu Sans Mono",monospace;padding:1px 4px;overflow-wrap:break-word}h1 code{background:transparent}pre{border-top:1px solid #ccc;border-bottom:1px solid #ccc;margin:1em 0}#http-server-module-list{display:flex;flex-flow:column}#http-server-module-list div{display:flex}#http-server-module-list dt{min-width:10%}#http-server-module-list p{margin-top:0}.toc ul,#index{list-style-type:none;margin:0;padding:0}#index code{background:transparent}#index h3{border-bottom:1px solid #ddd}#index ul{padding:0}#index h4{margin-top:.6em;font-weight:bold}@media (min-width:200ex){#index .two-column{column-count:2}}@media (min-width:300ex){#index .two-column{column-count:3}}dl{margin-bottom:2em}dl dl:last-child{margin-bottom:4em}dd{margin:0 0 1em 3em}#header-classes + dl > dd{margin-bottom:3em}dd dd{margin-left:2em}dd p{margin:10px 0}.name{background:#eee;font-size:.85em;padding:5px 10px;display:inline-block;min-width:40%}.name:hover{background:#e0e0e0}dt:target .name{background:var(--highlight-color)}.name > span:first-child{white-space:nowrap}.name.class > span:nth-child(2){margin-left:.4em}.inherited{color:#999;border-left:5px solid #eee;padding-left:1em}.inheritance em{font-style:normal;font-weight:bold}.desc h2{font-weight:400;font-size:1.25em}.desc h3{font-size:1em}.desc dt code{background:inherit}.source summary,.git-link-div{color:#666;text-align:right;font-weight:400;font-size:.8em;text-transform:uppercase}.source summary > *{white-space:nowrap;cursor:pointer}.git-link{color:inherit;margin-left:1em}.source pre{max-height:500px;overflow:auto;margin:0}.source pre code{font-size:12px;overflow:visible}.hlist{list-style:none}.hlist li{display:inline}.hlist li:after{content:',\2002'}.hlist li:last-child:after{content:none}.hlist .hlist{display:inline;padding-left:1em}img{max-width:100%}td{padding:0 .5em}.admonition{padding:.1em 1em;margin-bottom:1em}.admonition-title{font-weight:bold}.admonition.note,.admonition.info,.admonition.important{background:#aef}.admonition.todo,.admonition.versionadded,.admonition.tip,.admonition.hint{background:#dfd}.admonition.warning,.admonition.versionchanged,.admonition.deprecated{background:#fd4}.admonition.error,.admonition.danger,.admonition.caution{background:lightpink}</style>
+<style media="screen and (min-width: 700px)">@media screen and (min-width:700px){#sidebar{width:30%;height:100vh;overflow:auto;position:sticky;top:0}#content{width:70%;max-width:100ch;padding:3em 4em;border-left:1px solid #ddd}pre code{font-size:1em}.name{font-size:1em}main{display:flex;flex-direction:row-reverse;justify-content:flex-end}.toc ul ul,#index ul ul{padding-left:1em}.toc > ul > li{margin-top:.5em}}</style>
+<style media="print">@media print{#sidebar h1{page-break-before:always}.source{display:none}}@media print{*{background:transparent !important;color:#000 !important;box-shadow:none !important;text-shadow:none !important}a[href]:after{content:" (" attr(href) ")";font-size:90%}a[href][title]:after{content:none}abbr[title]:after{content:" (" attr(title) ")"}.ir a:after,a[href^="javascript:"]:after,a[href^="#"]:after{content:""}pre,blockquote{border:1px solid #999;page-break-inside:avoid}thead{display:table-header-group}tr,img{page-break-inside:avoid}img{max-width:100% !important}@page{margin:0.5cm}p,h2,h3{orphans:3;widows:3}h1,h2,h3,h4,h5,h6{page-break-after:avoid}}</style>
+<script type="text/x-mathjax-config">MathJax.Hub.Config({ tex2jax: { inlineMath: [ ['$','$'], ["\\(","\\)"] ], processEscapes: true } });</script>
+<script async src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS_CHTML" integrity="sha256-kZafAc6mZvK3W3v1pHOcUix30OHQN6pU/NO2oFkqZVw=" crossorigin></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js" integrity="sha512-D9gUyxqja7hBtkWpPWGt9wfbfaMGVt9gnyCvYa+jojwwPHLCzUm5i8rpk7vD7wNee9bA35eYIjobYPaQuKS1MQ==" crossorigin></script>
+<script>window.addEventListener('DOMContentLoaded', () => {
+hljs.configure({languages: ['bash', 'css', 'diff', 'graphql', 'ini', 'javascript', 'json', 'plaintext', 'python', 'python-repl', 'rust', 'shell', 'sql', 'typescript', 'xml', 'yaml']});
+hljs.highlightAll();
+})</script>
+</head>
+<body>
+<main>
+<article id="content">
+<header>
+<h1 class="title">Module <code>get_activations</code></h1>
+</header>
+<section id="section-intro">
+<p>Gets activations for a ViT's image representation and stores them as floating-point arrays on disk so they can be used as training data for SAEs.</p>
+<p>To get activations, we need a dataloader, a model, and a place on disk to write data to.</p>
+<p>By default, I am interested in training SAEs on BioCLIP looking at the validation split of TreeOfLife-10M.
+Because of this, I use a lot of the same infrastructure that we used for training (webdataset, open_clip_torch, etc).</p>
+</section>
+<section>
+</section>
+<section>
+</section>
+<section>
+<h2 class="section-title" id="header-functions">Functions</h2>
+<dl>
+<dt id="get_activations.filter_no_caption_or_no_image"><code class="name flex">
+<span>def <span class="ident">filter_no_caption_or_no_image</span></span>(<span>sample)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="get_activations.fs_safe"><code class="name flex">
+<span>def <span class="ident">fs_safe</span></span>(<span>string: str) ‑> str</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="get_activations.get_activations"><code class="name flex">
+<span>def <span class="ident">get_activations</span></span>(<span>args: <a title="get_activations.Args" href="#get_activations.Args">Args</a>)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="get_activations.get_dataloader"><code class="name flex">
+<span>def <span class="ident">get_dataloader</span></span>(<span>args: <a title="get_activations.Args" href="#get_activations.Args">Args</a>, img_transform)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="get_activations.log_and_continue"><code class="name flex">
+<span>def <span class="ident">log_and_continue</span></span>(<span>exn)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Call in an exception handler to ignore any exception, issue a warning, and continue.</p></div>
+</dd>
+<dt id="get_activations.main"><code class="name flex">
+<span>def <span class="ident">main</span></span>(<span>args: <a title="get_activations.Args" href="#get_activations.Args">Args</a>)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
+</section>
+<section>
+<h2 class="section-title" id="header-classes">Classes</h2>
+<dl>
+<dt id="get_activations.Args"><code class="flex name class">
+<span>class <span class="ident">Args</span></span>
+<span>(</span><span>data: <a title="get_activations.WebdatasetArgs" href="#get_activations.WebdatasetArgs">WebdatasetArgs</a> | <a title="get_activations.HfDatasetsArgs" href="#get_activations.HfDatasetsArgs">HfDatasetsArgs</a> = HfDatasetsArgs(name='ILSVRC/imagenet-1k', split='train', n_examples=1281167), batch_size: int = 256, log_every: int = 10, n_workers: int = 4, model_ckpt: str = 'hf-hub:imageomics/BioCLIP', d_model: int = 768, write_to: str = '/fs/scratch/PAS2136/samuelstevens/datasets/sae', suffix: str = '', device: str = 'cuda', slurm: bool = False, slurm_acct: str = 'PAS2136')</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Args(data: get_activations.WebdatasetArgs | get_activations.HfDatasetsArgs = HfDatasetsArgs(name='ILSVRC/imagenet-1k', split='train', n_examples=1281167), batch_size: int = 256, log_every: int = 10, n_workers: int = 4, model_ckpt: str = 'hf-hub:imageomics/BioCLIP', d_model: int = 768, write_to: str = '/fs/scratch/PAS2136/samuelstevens/datasets/sae', suffix: str = '', device: str = 'cuda', slurm: bool = False, slurm_acct: str = 'PAS2136')</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@beartype.beartype
+@dataclasses.dataclass(frozen=True)
+class Args:
+    data: WebdatasetArgs | HfDatasetsArgs = HfDatasetsArgs()
+    &#34;&#34;&#34;data options.&#34;&#34;&#34;
+    batch_size: int = 256
+    &#34;&#34;&#34;inference batch size.&#34;&#34;&#34;
+    log_every: int = 10
+    &#34;&#34;&#34;how often to log.&#34;&#34;&#34;
+    n_workers: int = 4
+    &#34;&#34;&#34;number of dataloader workers.&#34;&#34;&#34;
+    model_ckpt: str = &#34;hf-hub:imageomics/BioCLIP&#34;
+    &#34;&#34;&#34;specific open_clip model checkpoint to load.&#34;&#34;&#34;
+    d_model: int = 768
+    &#34;&#34;&#34;number of dimensions of outputs.&#34;&#34;&#34;
+    write_to: str = &#34;/fs/scratch/PAS2136/samuelstevens/datasets/sae&#34;
+    &#34;&#34;&#34;where to write activations.&#34;&#34;&#34;
+    suffix: str = &#34;&#34;
+    &#34;&#34;&#34;additional suffix for the activations file.&#34;&#34;&#34;
+    device: str = &#34;cuda&#34;
+    &#34;&#34;&#34;(computed at runtime) which kind of accelerator to use.&#34;&#34;&#34;
+    # Slurm
+    slurm: bool = False
+    &#34;&#34;&#34;whether to use slurm to run the job (with submitit).&#34;&#34;&#34;
+    slurm_acct: str = &#34;PAS2136&#34;
+    &#34;&#34;&#34;slurm account.&#34;&#34;&#34;</code></pre>
+</details>
+<h3>Class variables</h3>
+<dl>
+<dt id="get_activations.Args.batch_size"><code class="name">var <span class="ident">batch_size</span> : int</code></dt>
+<dd>
+<div class="desc"><p>inference batch size.</p></div>
+</dd>
+<dt id="get_activations.Args.d_model"><code class="name">var <span class="ident">d_model</span> : int</code></dt>
+<dd>
+<div class="desc"><p>number of dimensions of outputs.</p></div>
+</dd>
+<dt id="get_activations.Args.data"><code class="name">var <span class="ident">data</span> : <a title="get_activations.WebdatasetArgs" href="#get_activations.WebdatasetArgs">WebdatasetArgs</a> | <a title="get_activations.HfDatasetsArgs" href="#get_activations.HfDatasetsArgs">HfDatasetsArgs</a></code></dt>
+<dd>
+<div class="desc"><p>data options.</p></div>
+</dd>
+<dt id="get_activations.Args.device"><code class="name">var <span class="ident">device</span> : str</code></dt>
+<dd>
+<div class="desc"><p>(computed at runtime) which kind of accelerator to use.</p></div>
+</dd>
+<dt id="get_activations.Args.log_every"><code class="name">var <span class="ident">log_every</span> : int</code></dt>
+<dd>
+<div class="desc"><p>how often to log.</p></div>
+</dd>
+<dt id="get_activations.Args.model_ckpt"><code class="name">var <span class="ident">model_ckpt</span> : str</code></dt>
+<dd>
+<div class="desc"><p>specific open_clip model checkpoint to load.</p></div>
+</dd>
+<dt id="get_activations.Args.n_workers"><code class="name">var <span class="ident">n_workers</span> : int</code></dt>
+<dd>
+<div class="desc"><p>number of dataloader workers.</p></div>
+</dd>
+<dt id="get_activations.Args.slurm"><code class="name">var <span class="ident">slurm</span> : bool</code></dt>
+<dd>
+<div class="desc"><p>whether to use slurm to run the job (with submitit).</p></div>
+</dd>
+<dt id="get_activations.Args.slurm_acct"><code class="name">var <span class="ident">slurm_acct</span> : str</code></dt>
+<dd>
+<div class="desc"><p>slurm account.</p></div>
+</dd>
+<dt id="get_activations.Args.suffix"><code class="name">var <span class="ident">suffix</span> : str</code></dt>
+<dd>
+<div class="desc"><p>additional suffix for the activations file.</p></div>
+</dd>
+<dt id="get_activations.Args.write_to"><code class="name">var <span class="ident">write_to</span> : str</code></dt>
+<dd>
+<div class="desc"><p>where to write activations.</p></div>
+</dd>
+</dl>
+</dd>
+<dt id="get_activations.HfDatasetsArgs"><code class="flex name class">
+<span>class <span class="ident">HfDatasetsArgs</span></span>
+<span>(</span><span>name: str = 'ILSVRC/imagenet-1k', split: str = 'train', n_examples: int = 1281167)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>HfDatasetsArgs(name: str = 'ILSVRC/imagenet-1k', split: str = 'train', n_examples: int = 1281167)</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@beartype.beartype
+@dataclasses.dataclass(frozen=True)
+class HfDatasetsArgs:
+    name: str = &#34;ILSVRC/imagenet-1k&#34;
+    &#34;&#34;&#34;dataset name on https://huggingface.co/datasets&#34;&#34;&#34;
+    split: str = &#34;train&#34;
+    &#34;&#34;&#34;datset split.&#34;&#34;&#34;
+    n_examples: int = 1281167
+    &#34;&#34;&#34;number of examples in dataset.&#34;&#34;&#34;
+
+    @property
+    def suffix(self) -&gt; str:
+        return f&#34;{fs_safe(self.name)}-{self.split}&#34;</code></pre>
+</details>
+<h3>Class variables</h3>
+<dl>
+<dt id="get_activations.HfDatasetsArgs.n_examples"><code class="name">var <span class="ident">n_examples</span> : int</code></dt>
+<dd>
+<div class="desc"><p>number of examples in dataset.</p></div>
+</dd>
+<dt id="get_activations.HfDatasetsArgs.name"><code class="name">var <span class="ident">name</span> : str</code></dt>
+<dd>
+<div class="desc"><p>dataset name on <a href="https://huggingface.co/datasets">https://huggingface.co/datasets</a></p></div>
+</dd>
+<dt id="get_activations.HfDatasetsArgs.split"><code class="name">var <span class="ident">split</span> : str</code></dt>
+<dd>
+<div class="desc"><p>datset split.</p></div>
+</dd>
+</dl>
+<h3>Instance variables</h3>
+<dl>
+<dt id="get_activations.HfDatasetsArgs.suffix"><code class="name">prop <span class="ident">suffix</span> : str</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@property
+def suffix(self) -&gt; str:
+    return f&#34;{fs_safe(self.name)}-{self.split}&#34;</code></pre>
+</details>
+</dd>
+</dl>
+</dd>
+<dt id="get_activations.ShardedDiskStorage"><code class="flex name class">
+<span>class <span class="ident">ShardedDiskStorage</span></span>
+<span>(</span><span>dirpath: str, digits: int, examples_per_shard: int)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@jaxtyped(typechecker=beartype.beartype)
+class ShardedDiskStorage:
+    dirpath: str
+    pattern: str
+    shard_counter: int
+    shard: object
+
+    def __init__(self, dirpath: str, digits: int, examples_per_shard: int):
+        self.dirpath = dirpath
+        os.makedirs(self.dirpath, exist_ok=True)
+
+        self.pattern = f&#34;shard-%0{digits}d.bin&#34;
+        self.shard_counter = -1
+
+        self.examples_per_shard = examples_per_shard
+        self.shard = None
+
+        self.next()
+
+    def write(self, data: Float[np.ndarray, &#34;batch n_layers d_model&#34;]):
+        batch_size, n_layers, d_model = data.shape
+        assert self.n_per_shard % batch_size == 0
+
+        shape = (self.n_per_shard, n_layers, 1, d_model)
+
+        if self.shard is None:
+            self._new_shard(shape)
+        elif self.pos + batch_size &gt; self.n_per_shard:
+            # Time for a new shard.
+            self.finish()
+            self._new_shard(shape)
+
+        self.shard[self.pos : self.pos + batch_size] = data
+        self.pos += batch_size
+
+    def _new_shard(self, shape: tuple[int, int, int, int]):
+        self.finish()
+
+        self.shard_counter += 1
+        filepath = os.path.join(self.dirpath, self.pattern % self.shard_counter)
+        self.shard = np.memmap(filepath, dtype=np.float32, mode=&#34;w+&#34;, shape=shape)
+        self.pos = 0
+
+    def finish(self):
+        if self.shard is not None:
+            self.shard.flush()
+            self.shard.close()
+            del self.shard</code></pre>
+</details>
+<h3>Class variables</h3>
+<dl>
+<dt id="get_activations.ShardedDiskStorage.dirpath"><code class="name">var <span class="ident">dirpath</span> : str</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="get_activations.ShardedDiskStorage.pattern"><code class="name">var <span class="ident">pattern</span> : str</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="get_activations.ShardedDiskStorage.shard"><code class="name">var <span class="ident">shard</span> : object</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="get_activations.ShardedDiskStorage.shard_counter"><code class="name">var <span class="ident">shard_counter</span> : int</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
+<h3>Methods</h3>
+<dl>
+<dt id="get_activations.ShardedDiskStorage.finish"><code class="name flex">
+<span>def <span class="ident">finish</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="get_activations.ShardedDiskStorage.write"><code class="name flex">
+<span>def <span class="ident">write</span></span>(<span>self, data: jaxtyping.Float[ndarray, 'batch n_layers d_model'])</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
+</dd>
+<dt id="get_activations.WebdatasetArgs"><code class="flex name class">
+<span>class <span class="ident">WebdatasetArgs</span></span>
+<span>(</span><span>url: str = '/fs/ess/PAS2136/open_clip/data/evobio10m-v3.3/224x224/val/shard-{000000..000063}.tar', n_examples: int = 503199)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>WebdatasetArgs(url: str = '/fs/ess/PAS2136/open_clip/data/evobio10m-v3.3/224x224/val/shard-{000000..000063}.tar', n_examples: int = 503199)</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@beartype.beartype
+@dataclasses.dataclass(frozen=True)
+class WebdatasetArgs:
+    url: str = &#34;/fs/ess/PAS2136/open_clip/data/evobio10m-v3.3/224x224/val/shard-{000000..000063}.tar&#34;
+    &#34;&#34;&#34;where the .tar files are located.&#34;&#34;&#34;
+    n_examples: int = 503199
+    &#34;&#34;&#34;number of examples in url.&#34;&#34;&#34;
+
+    @property
+    def suffix(self) -&gt; str:
+        return &#34;&#34;</code></pre>
+</details>
+<h3>Class variables</h3>
+<dl>
+<dt id="get_activations.WebdatasetArgs.n_examples"><code class="name">var <span class="ident">n_examples</span> : int</code></dt>
+<dd>
+<div class="desc"><p>number of examples in url.</p></div>
+</dd>
+<dt id="get_activations.WebdatasetArgs.url"><code class="name">var <span class="ident">url</span> : str</code></dt>
+<dd>
+<div class="desc"><p>where the .tar files are located.</p></div>
+</dd>
+</dl>
+<h3>Instance variables</h3>
+<dl>
+<dt id="get_activations.WebdatasetArgs.suffix"><code class="name">prop <span class="ident">suffix</span> : str</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@property
+def suffix(self) -&gt; str:
+    return &#34;&#34;</code></pre>
+</details>
+</dd>
+</dl>
+</dd>
+</dl>
+</section>
+</article>
+<nav id="sidebar">
+<div class="toc">
+<ul></ul>
+</div>
+<ul id="index">
+<li><h3><a href="#header-functions">Functions</a></h3>
+<ul class="">
+<li><code><a title="get_activations.filter_no_caption_or_no_image" href="#get_activations.filter_no_caption_or_no_image">filter_no_caption_or_no_image</a></code></li>
+<li><code><a title="get_activations.fs_safe" href="#get_activations.fs_safe">fs_safe</a></code></li>
+<li><code><a title="get_activations.get_activations" href="#get_activations.get_activations">get_activations</a></code></li>
+<li><code><a title="get_activations.get_dataloader" href="#get_activations.get_dataloader">get_dataloader</a></code></li>
+<li><code><a title="get_activations.log_and_continue" href="#get_activations.log_and_continue">log_and_continue</a></code></li>
+<li><code><a title="get_activations.main" href="#get_activations.main">main</a></code></li>
+</ul>
+</li>
+<li><h3><a href="#header-classes">Classes</a></h3>
+<ul>
+<li>
+<h4><code><a title="get_activations.Args" href="#get_activations.Args">Args</a></code></h4>
+<ul class="two-column">
+<li><code><a title="get_activations.Args.batch_size" href="#get_activations.Args.batch_size">batch_size</a></code></li>
+<li><code><a title="get_activations.Args.d_model" href="#get_activations.Args.d_model">d_model</a></code></li>
+<li><code><a title="get_activations.Args.data" href="#get_activations.Args.data">data</a></code></li>
+<li><code><a title="get_activations.Args.device" href="#get_activations.Args.device">device</a></code></li>
+<li><code><a title="get_activations.Args.log_every" href="#get_activations.Args.log_every">log_every</a></code></li>
+<li><code><a title="get_activations.Args.model_ckpt" href="#get_activations.Args.model_ckpt">model_ckpt</a></code></li>
+<li><code><a title="get_activations.Args.n_workers" href="#get_activations.Args.n_workers">n_workers</a></code></li>
+<li><code><a title="get_activations.Args.slurm" href="#get_activations.Args.slurm">slurm</a></code></li>
+<li><code><a title="get_activations.Args.slurm_acct" href="#get_activations.Args.slurm_acct">slurm_acct</a></code></li>
+<li><code><a title="get_activations.Args.suffix" href="#get_activations.Args.suffix">suffix</a></code></li>
+<li><code><a title="get_activations.Args.write_to" href="#get_activations.Args.write_to">write_to</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="get_activations.HfDatasetsArgs" href="#get_activations.HfDatasetsArgs">HfDatasetsArgs</a></code></h4>
+<ul class="">
+<li><code><a title="get_activations.HfDatasetsArgs.n_examples" href="#get_activations.HfDatasetsArgs.n_examples">n_examples</a></code></li>
+<li><code><a title="get_activations.HfDatasetsArgs.name" href="#get_activations.HfDatasetsArgs.name">name</a></code></li>
+<li><code><a title="get_activations.HfDatasetsArgs.split" href="#get_activations.HfDatasetsArgs.split">split</a></code></li>
+<li><code><a title="get_activations.HfDatasetsArgs.suffix" href="#get_activations.HfDatasetsArgs.suffix">suffix</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="get_activations.ShardedDiskStorage" href="#get_activations.ShardedDiskStorage">ShardedDiskStorage</a></code></h4>
+<ul class="two-column">
+<li><code><a title="get_activations.ShardedDiskStorage.dirpath" href="#get_activations.ShardedDiskStorage.dirpath">dirpath</a></code></li>
+<li><code><a title="get_activations.ShardedDiskStorage.finish" href="#get_activations.ShardedDiskStorage.finish">finish</a></code></li>
+<li><code><a title="get_activations.ShardedDiskStorage.pattern" href="#get_activations.ShardedDiskStorage.pattern">pattern</a></code></li>
+<li><code><a title="get_activations.ShardedDiskStorage.shard" href="#get_activations.ShardedDiskStorage.shard">shard</a></code></li>
+<li><code><a title="get_activations.ShardedDiskStorage.shard_counter" href="#get_activations.ShardedDiskStorage.shard_counter">shard_counter</a></code></li>
+<li><code><a title="get_activations.ShardedDiskStorage.write" href="#get_activations.ShardedDiskStorage.write">write</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="get_activations.WebdatasetArgs" href="#get_activations.WebdatasetArgs">WebdatasetArgs</a></code></h4>
+<ul class="">
+<li><code><a title="get_activations.WebdatasetArgs.n_examples" href="#get_activations.WebdatasetArgs.n_examples">n_examples</a></code></li>
+<li><code><a title="get_activations.WebdatasetArgs.suffix" href="#get_activations.WebdatasetArgs.suffix">suffix</a></code></li>
+<li><code><a title="get_activations.WebdatasetArgs.url" href="#get_activations.WebdatasetArgs.url">url</a></code></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</nav>
+</main>
+<footer id="footer">
+<p>Generated by <a href="https://pdoc3.github.io/pdoc" title="pdoc: Python API documentation generator"><cite>pdoc</cite> 0.11.1</a>.</p>
+</footer>
+</body>
+</html>

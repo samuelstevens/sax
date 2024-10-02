@@ -5,6 +5,7 @@ description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.11"
 dependencies = [
+    "altair>=5.4.1",
     "beartype>=0.18.5",
     "chex>=0.1.86",
     "datasets>=3.0.0",
@@ -15,6 +16,7 @@ dependencies = [
     "matplotlib>=3.9.2",
     "open-clip-torch>=2.26.1",
     "optax>=0.2.3",
+    "polars>=1.8.2",
     "setuptools>=75.1.0",
     "submitit>=1.5.2",
     "torch>=2.4.1",
@@ -29,5 +31,6 @@ ignore = ["F722"]
 
 [tool.uv]
 dev-dependencies = [
+    "pdoc3>=0.11.1",
     "pytest>=8.3.3",
 ]
