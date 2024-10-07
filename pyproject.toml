@@ -6,7 +6,6 @@ readme = "README.md"
 requires-python = ">=3.11"
 dependencies = [
     "altair>=5.4.1",
-    "beartype>=0.18.5",
     "chex>=0.1.86",
     "datasets>=3.0.0",
     "equinox>=0.11.7",
@@ -31,6 +30,9 @@ ignore = ["F722"]
 
 [tool.uv]
 dev-dependencies = [
+    "einops>=0.8.0",
     "pdoc3>=0.11.1",
     "pytest>=8.3.3",
+    "transformer-lens==1.10.0",
+    "transformers==4.35.2",
 ]

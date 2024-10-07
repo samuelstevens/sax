@@ -68,6 +68,7 @@ class Loss(eqx.Module):
     reconstruction: Float[Array, ""]
     sparsity: Float[Array, ""]
     l0: Float[Array, ""]
+    l1: Float[Array, ""]
     trivial: Float[Array, ""]
 
     @property
@@ -76,16 +77,17 @@ class Loss(eqx.Module):
 
     @property
     def fvu(self) -> Float[Array, ""]:
-        return self.loss / self.trivial
+        return 1 - self.loss / self.trivial
 
     def to_dict(self) -> dict[str, float]:
         return {
-            "train/loss": self.loss.item(),
-            "train/reconstruction": self.reconstruction.item(),
-            "train/sparsity": self.sparsity.item(),
-            "train/fvu": self.fvu.item(),
-            "train/l0": self.l0.item(),
-            "train/trivial": self.trivial.item(),
+            "loss": self.loss.item(),
+            "reconstruction": self.reconstruction.item(),
+            "sparsity": self.sparsity.item(),
+            "fvu": self.fvu.item(),
+            "l0": self.l0.item(),
+            "l1": self.l1.item(),
+            "trivial": self.trivial.item(),
         }
 
 
@@ -135,8 +137,8 @@ class ReluSAE(eqx.Module):
         reconstruct_err = x - x_hat
         reconstruct_loss = jnp.sum(reconstruct_err**2, axis=-1).mean()
 
-        l1 = jnp.linalg.norm(f_x, ord=1, axis=-1)
-        sparsity_loss = (sparsity_coeff * l1).mean()
+        l1 = jnp.linalg.norm(f_x, ord=1, axis=-1).mean()
+        sparsity_loss = sparsity_coeff * l1
 
         # Measure l0 sparsity as auxilary metric.
         l0 = jnp.sum(f_x > 0, axis=1).mean()
@@ -145,7 +147,83 @@ class ReluSAE(eqx.Module):
         trivial_err = x - x.mean(axis=0)
         trivial_loss = (trivial_err**2).sum(axis=-1).mean()
 
-        return Loss(reconstruct_loss, sparsity_loss, l0, trivial_loss)
+        return Loss(reconstruct_loss, sparsity_loss, l0, l1, trivial_loss)
+
+
+class HugoFrySAE(eqx.Module):
+    # Note that w_* are transposed in shape
+    w_enc: Float[Array, "d_hidden d_in"]
+    b_enc: Float[Array, " d_hidden"]
+    w_dec: Float[Array, "d_in d_hidden"]
+    b_dec: Float[Array, " d_in"]
+
+    def __init__(self, d_in: int, d_hidden: int, *, key: chex.PRNGKey):
+        init_fn = jax.nn.initializers.he_uniform()
+        w_dec = init_fn(key, (d_in, d_hidden), jnp.float32)
+        # Re-scale each latent vector to have unit norm. w_dec is [n_features, d_model], so we want to take the norm along axis=1 (0-indexed).
+        self.w_dec = w_dec / jnp.linalg.norm(w_dec, axis=1, keepdims=True)
+
+        # Initialize w_enc to transpose of w_dec, but do not tie.
+        self.w_enc = self.w_dec.T
+
+        # Initialize enc bias to 0.
+        self.b_enc = jnp.zeros((d_hidden,))
+        self.b_dec = jnp.zeros((d_in,))
+
+    def from_torch(self, torch_model):
+        # Replace bias terms.
+        self = eqx.tree_at(
+            lambda m: m.b_dec, self, replace=jnp.array(torch_model.b_dec.detach())
+        )
+        self = eqx.tree_at(
+            lambda m: m.b_enc, self, replace=jnp.array(torch_model.b_enc.detach())
+        )
+
+        # Need to transpose the W terms.
+        self = eqx.tree_at(
+            lambda m: m.w_enc, self, replace=jnp.array(torch_model.W_enc.detach()).T
+        )
+        self = eqx.tree_at(
+            lambda m: m.w_dec, self, replace=jnp.array(torch_model.W_dec.detach()).T
+        )
+
+        return self
+
+    def __call__(
+        self, x: Float[Array, " d_in"]
+    ) -> tuple[Float[Array, " d_in"], Float[Array, " d_in"], Float[Array, " d_hidden"]]:
+        # Always subtract b_dec.
+        x = x - self.b_dec
+        x = self.w_enc @ x + self.b_enc
+        f_x = jax.nn.relu(x)
+        x_hat = self.w_dec @ f_x + self.b_dec
+        return x_hat, f_x
+
+    @staticmethod
+    def loss(
+        model: typing.Self,
+        x: Float[Array, "batch d_in"],
+        sparsity_coeff: Float[Array, ""],
+    ) -> Loss:
+        x_hat, f_x = jax.vmap(model)(x)
+
+        reconstruct_err = x - x_hat
+        reconstruct_loss = (reconstruct_err**2) / jnp.linalg.norm(
+            x, axis=1, keepdims=True
+        )
+        reconstruct_loss = reconstruct_loss.sum(axis=1).mean()
+
+        l1 = jnp.linalg.norm(f_x, ord=1, axis=-1).mean()
+        sparsity_loss = sparsity_coeff * l1
+
+        # Measure l0 sparsity as auxilary metric.
+        l0 = jnp.sum(f_x > 0, axis=1).mean()
+
+        # Measure trivial loss, the loss obtained by choosing the batch mean.
+        trivial_err = x - x.mean(axis=0)
+        trivial_loss = (trivial_err**2).sum(axis=-1).mean()
+
+        return Loss(reconstruct_loss, sparsity_loss, l0, l1, trivial_loss)
 
 
 @jaxtyped(typechecker=beartype.beartype)
@@ -174,4 +252,7 @@ class ReparamInvariantReluSAE(ReluSAE):
         trivial_err = x - x.mean(axis=0)
         trivial_loss = (trivial_err**2).sum(axis=-1).mean()
 
-        return Loss(reconstruct_loss, sparsity_loss, l0, trivial_loss)
+        # Measure L1 for tracking.
+        l1 = (jnp.linalg.norm(f_x, ord=1, axis=1).mean(),)
+
+        return Loss(reconstruct_loss, sparsity_loss, l0, l1, trivial_loss)
