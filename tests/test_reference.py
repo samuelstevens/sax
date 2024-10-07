@@ -217,8 +217,7 @@ def test_forward_pass_train():
         )
 
 
-@pytest.mark.xfail(reason="Test not implemented yet.")
-def test_backward_pass_train():
+def test_calc_loss_train():
     ckpt_path = "tests/clip-vit-large-patch14_-2_resid_65536.pt"
 
     loaded_object = torch.load(ckpt_path, map_location="cpu")
@@ -236,28 +235,34 @@ def test_backward_pass_train():
         d_in=1024, d_hidden=1024 * 64, key=jax.random.key(seed=0)
     ).from_torch(ref_sae)
 
-    # Check that from_torch worked.
-    np.testing.assert_allclose(my_sae.w_enc.T, ref_sae.W_enc.detach().cpu().numpy())
-    np.testing.assert_allclose(my_sae.w_dec.T, ref_sae.W_dec.detach().cpu().numpy())
-
     rng = np.random.default_rng(seed=12)
     for _ in range(10):
         inputs_np = rng.normal(size=(32, 1024)).astype(np.float64)
         my_loss = my_sae.loss(
-            my_sae, inputs_np, sparsity_coeff=jnp.array(cfg.l1_coefficient)
+            my_sae, jnp.array(inputs_np), sparsity_coeff=jnp.array(cfg.l1_coefficient)
         )
         _, _, ref_loss, ref_mse_loss, ref_l1_loss, _ = ref_sae(
-            torch.from_numpy(inputs_np)
+            torch.from_numpy(inputs_np), torch.zeros(1024 * 64, dtype=bool)
         )
 
         # MSE loss
         np.testing.assert_allclose(
-            my_loss.reconstruction.item(),
+            my_loss.reconstruction,
             ref_mse_loss.detach().cpu().numpy(),
             atol=atol,
             rtol=rtol,
         )
         # L1 loss
         np.testing.assert_allclose(
-            my_loss.l1.item(), ref_l1_loss.detach().cpu().numpy(), atol=atol, rtol=rtol
+            my_loss.sparsity,
+            ref_l1_loss.detach().cpu().numpy(),
+            atol=atol,
+            rtol=rtol,
+        )
+        # Sum of loss terms
+        np.testing.assert_allclose(
+            my_loss.loss,
+            ref_loss.detach().cpu().numpy(),
+            atol=atol,
+            rtol=rtol,
         )

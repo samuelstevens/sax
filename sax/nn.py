@@ -207,11 +207,10 @@ class HugoFrySAE(eqx.Module):
     ) -> Loss:
         x_hat, f_x = jax.vmap(model)(x)
 
-        reconstruct_err = x - x_hat
-        reconstruct_loss = (reconstruct_err**2) / jnp.linalg.norm(
+        reconstruct_loss = ((x - x_hat) ** 2) / jnp.linalg.norm(
             x, axis=1, keepdims=True
         )
-        reconstruct_loss = reconstruct_loss.sum(axis=1).mean()
+        reconstruct_loss = reconstruct_loss.mean()
 
         l1 = jnp.linalg.norm(f_x, ord=1, axis=-1).mean()
         sparsity_loss = sparsity_coeff * l1
