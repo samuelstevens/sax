@@ -3,12 +3,15 @@ import sys
 sys.path.insert(0, "/home/stevens.994/projects/sax/vendored/mats_sae_training_for_ViTs")
 
 
+import beartype
 import datasets
+import equinox as eqx
 import jax
-import pytest
 import jax.numpy as jnp
 import numpy as np
+import pytest
 import torch
+from jaxtyping import Array, Float, jaxtyped
 from sae_training.sparse_autoencoder import SparseAutoencoder
 from sae_training.utils import ViTSparseAutoencoderSessionloader
 from vit_sae_analysis import dashboard_fns
@@ -266,3 +269,141 @@ def test_calc_loss_train():
             atol=atol,
             rtol=rtol,
         )
+
+
+def test_backward_pass_with_parallel_grads():
+    ckpt_path = "tests/clip-vit-large-patch14_-2_resid_65536.pt"
+
+    loaded_object = torch.load(ckpt_path, map_location="cpu")
+    cfg = loaded_object["cfg"]
+    state_dict = loaded_object["state_dict"]
+
+    cfg.device = torch.device("cpu")
+
+    ref_sae = SparseAutoencoder(cfg)
+    ref_sae.load_state_dict(state_dict)
+    ref_sae.to("cpu")
+    ref_sae.train()
+
+    my_sae = sax.nn.HugoFrySAE(
+        d_in=1024, d_hidden=1024 * 64, key=jax.random.key(seed=0)
+    ).from_torch(ref_sae)
+
+    @jaxtyped(typechecker=beartype.beartype)
+    def _compute_loss(
+        model: eqx.Module, batch: Float[Array, "batch d_model"]
+    ) -> tuple[Float[Array, ""], sax.nn.Loss]:
+        """Compute loss. Return the complete loss (loss.loss) as the first term for optimization and the pytree `loss` for metrics."""
+        loss = model.loss(model, batch, jnp.array(cfg.l1_coefficient))
+        return loss.loss, loss
+
+    # Only used to clear the .grad attributes.
+    dummy_opt = torch.optim.SGD(ref_sae.parameters())
+
+    rng = np.random.default_rng(seed=12)
+    for _ in range(10):
+        inputs_np = rng.normal(size=(32, 1024)).astype(np.float64)
+        (_, my_loss), my_grads = eqx.filter_value_and_grad(_compute_loss, has_aux=True)(
+            my_sae, jnp.array(inputs_np)
+        )
+
+        dead_mask = torch.zeros(1024 * 64, dtype=bool)
+        _, _, ref_loss, _, _, _ = ref_sae(torch.from_numpy(inputs_np), dead_mask)
+
+        # Check loss term.
+        np.testing.assert_allclose(
+            my_loss.loss,
+            ref_loss.detach().cpu().numpy(),
+            atol=atol,
+            rtol=rtol,
+        )
+
+        ref_loss.backward()
+
+        # Check gradients
+        np.testing.assert_allclose(
+            my_grads.b_dec, ref_sae.b_dec.grad.cpu().numpy(), atol=atol, rtol=rtol
+        )
+        np.testing.assert_allclose(
+            my_grads.b_enc, ref_sae.b_enc.grad.cpu().numpy(), atol=atol, rtol=rtol
+        )
+        np.testing.assert_allclose(
+            my_grads.w_enc.T, ref_sae.W_enc.grad.cpu().numpy(), atol=atol, rtol=rtol
+        )
+        np.testing.assert_allclose(
+            my_grads.w_dec.T, ref_sae.W_dec.grad.cpu().numpy(), atol=atol, rtol=rtol
+        )
+
+        # Include this so that grads are reset every loop iteration.
+        dummy_opt.zero_grad()
+
+
+def test_backward_pass_remove_parallel_grads():
+    ckpt_path = "tests/clip-vit-large-patch14_-2_resid_65536.pt"
+
+    loaded_object = torch.load(ckpt_path, map_location="cpu")
+    cfg = loaded_object["cfg"]
+    state_dict = loaded_object["state_dict"]
+
+    cfg.device = torch.device("cpu")
+
+    ref_sae = SparseAutoencoder(cfg)
+    ref_sae.load_state_dict(state_dict)
+    ref_sae.to("cpu")
+    ref_sae.train()
+
+    my_sae = sax.nn.HugoFrySAE(
+        d_in=1024, d_hidden=1024 * 64, key=jax.random.key(seed=0)
+    ).from_torch(ref_sae)
+
+    @jaxtyped(typechecker=beartype.beartype)
+    def _compute_loss(
+        model: eqx.Module, batch: Float[Array, "batch d_model"]
+    ) -> tuple[Float[Array, ""], sax.nn.Loss]:
+        """Compute loss. Return the complete loss (loss.loss) as the first term for optimization and the pytree `loss` for metrics."""
+        loss = model.loss(model, batch, jnp.array(cfg.l1_coefficient))
+        return loss.loss, loss
+
+    # Only used to clear the .grad attributes.
+    dummy_opt = torch.optim.SGD(ref_sae.parameters())
+
+    rng = np.random.default_rng(seed=12)
+    for _ in range(10):
+        inputs_np = rng.normal(size=(32, 1024)).astype(np.float64)
+        (_, my_loss), my_grads = eqx.filter_value_and_grad(_compute_loss, has_aux=True)(
+            my_sae, jnp.array(inputs_np)
+        )
+
+        dead_mask = torch.zeros(1024 * 64, dtype=bool)
+        _, _, ref_loss, _, _, _ = ref_sae(torch.from_numpy(inputs_np), dead_mask)
+
+        # Check loss terms.
+        np.testing.assert_allclose(
+            my_loss.loss,
+            ref_loss.detach().cpu().numpy(),
+            atol=atol,
+            rtol=rtol,
+        )
+
+        ref_loss.backward()
+
+        # Remove parallel component of gradients.
+        ref_sae.remove_gradient_parallel_to_decoder_directions()
+        my_grads = my_sae.remove_parallel_grads(my_grads)
+
+        # Check gradients
+        np.testing.assert_allclose(
+            my_grads.b_dec, ref_sae.b_dec.grad.cpu().numpy(), atol=atol, rtol=rtol
+        )
+        np.testing.assert_allclose(
+            my_grads.b_enc, ref_sae.b_enc.grad.cpu().numpy(), atol=atol, rtol=rtol
+        )
+        np.testing.assert_allclose(
+            my_grads.w_enc.T, ref_sae.W_enc.grad.cpu().numpy(), atol=atol, rtol=rtol
+        )
+        np.testing.assert_allclose(
+            my_grads.w_dec.T, ref_sae.W_dec.grad.cpu().numpy(), atol=atol, rtol=rtol
+        )
+
+        # Include this so that grads are reset every loop iteration.
+        dummy_opt.zero_grad()

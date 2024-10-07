@@ -224,6 +224,16 @@ class HugoFrySAE(eqx.Module):
 
         return Loss(reconstruct_loss, sparsity_loss, l0, l1, trivial_loss)
 
+    def remove_parallel_grads(self, grads):
+        parallel_component = jnp.einsum("dh,dh->h", self.w_dec, grads.w_dec)
+        return eqx.tree_at(
+            lambda g: g.w_dec,
+            grads,
+            replace=(
+                grads.w_dec - jnp.einsum("h,dh->dh", parallel_component, self.w_dec)
+            ),
+        )
+
 
 @jaxtyped(typechecker=beartype.beartype)
 class ReparamInvariantReluSAE(ReluSAE):
